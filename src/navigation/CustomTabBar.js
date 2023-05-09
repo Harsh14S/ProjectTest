@@ -1,7 +1,14 @@
-import { Image, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import React from 'react'
+import {
+  Image,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import React from 'react';
 import { COLORS } from '../common/Colors';
-import { RFPercentage } from 'react-native-responsive-fontsize'
+import { RFPercentage } from 'react-native-responsive-fontsize';
 import { IconLinks } from '../common/IconLinks';
 import { fontSizeChart } from '../common/Styles';
 
@@ -48,23 +55,26 @@ export default CustomTabBar = ({ state, descriptors, navigation }) => {
             testID={options.tabBarTestID}
             onPress={onPress}
             onLongPress={onLongPress}
-            style={styles.navTabs}
-          >
-            <Text style={[{ color: isFocused ? COLORS.blue : COLORS.blueInactive }, styles.labelTxt]}>
+            style={styles.navTabs}>
+            <Text
+              style={[
+                { color: isFocused ? COLORS.blue : COLORS.blueInactive },
+                styles.labelTxt,
+              ]}>
               {label}
             </Text>
           </TouchableOpacity>
         );
       })}
-      <TouchableOpacity style={styles.newBtn} onPress={() => navigation.navigate('addNote', {})}>
-        <Image style={styles.btnImage} source={IconLinks.addIcon} />
+      <TouchableOpacity
+        style={styles.newBtn}
+        onPress={() => navigation.navigate('addNote', {})}>
+        <Image style={styles.btnImage} source={IconLinks.plusRound} />
         <Text style={styles.newBtnTxt}>New</Text>
-
       </TouchableOpacity>
-
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -78,34 +88,34 @@ const styles = StyleSheet.create({
     paddingVertical: RFPercentage(1), // 9px
     alignItems: 'center',
     marginHorizontal: RFPercentage(1),
-    marginVertical: RFPercentage(2.7),  // 22px
+    marginVertical: RFPercentage(2.7), // 22px
     borderRadius: RFPercentage(100),
-    paddingHorizontal: RFPercentage(1.7),  //14px
+    paddingHorizontal: RFPercentage(1.7), //14px
     // backgroundColor: COLORS.green,
   },
   labelTxt: {
     fontSize: RFPercentage(2.2), // 18px
-    fontWeight: '700'
+    fontWeight: '700',
   },
   newBtn: {
     paddingVertical: RFPercentage(1), // 9px
     alignItems: 'center',
     marginHorizontal: RFPercentage(1),
-    marginVertical: RFPercentage(2.7),  // 22px
+    marginVertical: RFPercentage(2.7), // 22px
     borderRadius: RFPercentage(100),
-    paddingHorizontal: RFPercentage(1.7),  //14px
+    paddingHorizontal: RFPercentage(1.7), //14px
     flexDirection: 'row',
     backgroundColor: COLORS.blue,
   },
   newBtnTxt: {
     fontSize: fontSizeChart._14px,
     fontWeight: '700',
-    color: COLORS.white
+    color: COLORS.white,
   },
   btnImage: {
-    marginRight: RFPercentage(2.6),  // 20px
+    marginRight: RFPercentage(2.6), // 20px
     width: RFPercentage(2.2),
     height: RFPercentage(2.2),
-    tintColor: COLORS.white
-  }
-})
+    tintColor: COLORS.white,
+  },
+});
