@@ -1,18 +1,18 @@
 import {
   Image,
-  SafeAreaView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { COLORS } from '../common/Colors';
 import { RFPercentage } from 'react-native-responsive-fontsize';
 import { IconLinks } from '../common/IconLinks';
 import { fontSizeChart } from '../common/Styles';
 
-export default CustomTabBar = ({ state, descriptors, navigation }) => {
+export default CustomTabBar = ({ state, descriptors, navigation, route }) => {
+
   return (
     <View style={styles.container}>
       {state.routes.map((route, index) => {

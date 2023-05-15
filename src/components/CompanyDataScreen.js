@@ -1,22 +1,50 @@
-import { Image, Platform, SafeAreaView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import React from 'react'
+import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import React, { useEffect, useState } from 'react'
 import { CommonStyles, fontSizeChart } from '../common/Styles'
 import { COLORS } from '../common/Colors'
 import { IconLinks } from '../common/IconLinks'
 import { RFPercentage } from 'react-native-responsive-fontsize'
+import firestore from '@react-native-firebase/firestore';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const DashboardAllScreen = () => {
-  return (
-    <SafeAreaView style={[styles.container, CommonStyles.screenPadding]}>
-      <View style={styles.headerTitle}>
-        <View style={styles.verticalBoldLine} />
-        <View style={styles.sos}>
-          <Text style={styles.headerTitleTxt}>Company 5</Text>
-          <TouchableOpacity>
-            <Image source={IconLinks.whatsapp} style={styles.whatsappIcon} />
-          </TouchableOpacity>
-        </View>
+export default CompanyDataScreen = ({ route, navigation }) => {
+  const routeParams = route.params;
+  console.log('Params: ', routeParams);
+  console.log('Title: ', route.params);
+  const [companyName, setcompanyName] = useState(null);
+  const [companiesData, setcompaniesData] = useState(null);
+
+
+  // const getCompany = async () => {
+  //   await firestore().collection('Companies')
+  //     // .doc(routeParams)
+  //     .get()
+  //     .then(snap => {
+  //       // console.log("CompanyData: ", snap.docs[0]._data.companyName);
+  //       setcompanyName(snap.docs[0]._data.companyName)
+
+  //     }).catch((error) => {
+  //       console.log("error caught");
+  //       // setIsEmpty(true);
+  //     })
+  // }
+
+  // useEffect(() => {
+  //   getCompany();
+  // }, [])
+
+  return <View style={[styles.container, CommonStyles.screenPadding]}>
+    {/* <StatusBar barStyle={'dark-content'} backgroundColor={COLORS.white} /> */}
+    <View style={styles.headerTitle}>
+      <View style={styles.verticalBoldLine} />
+      <View style={styles.sos}>
+        <Text style={styles.headerTitleTxt}>{companyName}</Text>
+        <TouchableOpacity>
+          <Image source={IconLinks.whatsapp} style={styles.whatsappIcon} />
+        </TouchableOpacity>
       </View>
+    </View>
+    {
 
       <View style={styles.tasksMainContainer}>
         <View style={styles.taskDateAndDayContainer}>
@@ -38,8 +66,8 @@ const DashboardAllScreen = () => {
                 <Text style={{ fontSize: fontSizeChart._12px, color: COLORS.black }}>Test finish adsdas d d</Text>
               </View>
               <View style={{ flexDirection: 'row', marginBottom: 7 }}>
-                <Image source={IconLinks.radioButtonUnselected} style={styles.radioBTNsmall} />
-                <Text style={{ fontSize: fontSizeChart._12px, color: COLORS.black }}>White -- 25</Text>
+                <Image source={IconLinks.radioButtonSelected} style={styles.radioBTNsmall} />
+                <Text style={{ fontSize: fontSizeChart._12px, color: COLORS.black, textDecorationLine: 'line-through' }}>White -- 25</Text>
               </View>
               <View style={{ flexDirection: 'row', marginBottom: 7 }}>
                 <Image source={IconLinks.radioButtonUnselected} style={styles.radioBTNsmall} />
@@ -48,17 +76,23 @@ const DashboardAllScreen = () => {
             </View>
           </View>
         </View>
-      </View>
-    </SafeAreaView>
-  )
+      </View>}
+  </View>
 }
-
-export default DashboardAllScreen
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.white,
+  },
+  emptyScreen: {
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  emptyScreenTxt: {
+    fontSize: fontSizeChart._24px,
+    fontFamily: 'Montserrat-Bold',
+    color: COLORS.grey
   },
   headerTitle: {
     flexDirection: 'row',
@@ -67,7 +101,8 @@ const styles = StyleSheet.create({
   },
   headerTitleTxt: {
     fontSize: fontSizeChart._18px,
-    fontWeight: '700'
+    fontWeight: '700',
+    color: COLORS.black,
   },
   whatsappIcon: {
     height: RFPercentage(3.7),

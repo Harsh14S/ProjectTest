@@ -1,17 +1,19 @@
 import { StatusBar, StyleSheet, Text, View } from 'react-native'
 import React, { useEffect } from 'react'
 import { NavigationContainer } from '@react-navigation/native';
-import MainNavigator from './src/navigation/MainNavigator';
+import { DrawerNavigator, StackNavigator } from './src/navigation/MainNavigator';
 import { COLORS } from './src/common/Colors';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 export default App = () => {
 
   return (
-    <View style={{ flex: 1 }}>
+    <SafeAreaProvider style={{ flex: 1 }}>
       <StatusBar barStyle={'dark-content'} translucent={false} backgroundColor={COLORS.white} />
       <NavigationContainer>
-        <MainNavigator />
+        {/* <DrawerNavigator /> */}
+        <StackNavigator />
       </NavigationContainer>
-    </View>
+    </SafeAreaProvider>
   );
 };
