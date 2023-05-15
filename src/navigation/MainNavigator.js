@@ -1,4 +1,4 @@
-import { Image, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import React from 'react'
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createDrawerNavigator } from '@react-navigation/drawer';
@@ -20,6 +20,8 @@ const Tab = createBottomTabNavigator();
 const Drawer = createDrawerNavigator();
 const Stack = createNativeStackNavigator();
 
+const date = new Date();
+
 export const StackNavigator = () => {
   return (
     <Stack.Navigator
@@ -31,48 +33,52 @@ export const StackNavigator = () => {
       <Stack.Screen name='home' component={DrawerNavigator} options={{
         headerShown: false
       }} />
-      <Stack.Screen name="addNote" component={AddNoteScreen} options={{
-        header: ({ navigation, route, options }) => {
-          const title = getHeaderTitle(options, route.name);
+      <Stack.Screen name="addNote" component={AddNoteScreen}
+        initialParams={{}}
+        options={{
+          headerTitle: date.getDate() + '/' + date.getMonth() + '/' + date.getFullYear(),
+          header: ({ navigation, route, options }) => {
+            const title = getHeaderTitle(options, route.name);
 
-          return (
-            <CustomStackNavigatorHeader title={title} navigation={navigation} />
-          );
-        },
-      }} />
+            return (
+              <CustomStackNavigatorHeader title={title} navigation={navigation} />
+            );
+          },
+        }} />
       <Stack.Screen name="AllCompanyData" component={AllCompanyData} />
     </Stack.Navigator>
   )
 }
 
-export const DrawerNavigator = () => {
+export const DrawerNavigator = ({ navigation, route }) => {
+  // console.log('DrawerNavigator Routes: ', route);
   return (
     <Drawer.Navigator
       defaultStatus='open'
       drawerContent={(props) => <CustomDrawerContent {...props} />}
       screenOptions={{
+        swipeEnabled: false,
         drawerStyle: { width: '100%' },
-        headerTitle: '',
         header: ({ navigation, route, options }) => {
-          return <SafeAreaView style={CommonStyles.headerStyle}>
+          return <View style={CommonStyles.headerStyle}>
             <TouchableOpacity onPress={() => navigation.toggleDrawer()} style={{ marginLeft: RFPercentage(2.2) }}>
               <Image source={IconLinks.menuBars} style={{ height: RFPercentage(2.7), width: RFPercentage(2.7), }} />
             </TouchableOpacity>
             <TouchableOpacity style={{ marginRight: RFPercentage(2.2) }}>
               <Image source={IconLinks.search} style={{ height: RFPercentage(2.7), width: RFPercentage(2.7) }} />
             </TouchableOpacity>
-          </SafeAreaView>;
+          </View>
         }
       }}
     >
-      <Drawer.Screen name="AllDrawer" component={BottomTabNavigator} />
+      <Drawer.Screen name="AllDrawer" component={BottomTabNavigator} initialParams={{
+      }} />
     </Drawer.Navigator>
   )
 }
 
-
-
-export const BottomTabNavigator = () => {
+export const BottomTabNavigator = ({ navigation, route }) => {
+  // console.log('BottomTabNavigator Routes: ', route);
   return (
     <Tab.Navigator
       screenOptions={{

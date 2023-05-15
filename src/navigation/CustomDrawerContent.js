@@ -1,17 +1,35 @@
-import { FlatList, Image, Platform, SafeAreaView, StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import { FlatList, Image, Platform, StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { COLORS } from '../common/Colors'
 import { IconLinks } from '../common/IconLinks'
 import { RFPercentage } from 'react-native-responsive-fontsize'
 import { fontSizeChart } from '../common/Styles'
 import firestore from '@react-native-firebase/firestore';
-import CustomerLoader from '../common/CommonComponents/CustomerLoader'
+import CustomerLoader from '../common/CommonComponents/CustomerLoader';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const CustomDrawerContent = () => {
+
+const CustomDrawerContent = ({ navigation }) => {
   const [addCompanyNew, setAddCompanyNew] = useState(false);
   const [newCompanyName, setnewCompanyName] = useState(null);
   const [companiesData, setcompaniesData] = useState(null);
   const [isEmpty, setIsEmpty] = useState(false);
+
+  const setCurrentScreen = async (value) => {
+    try {
+      await AsyncStorage.setItem('@currentCompany', value)
+        .then(() => {
+          console.log("currentCompany is successfully set ");
+          navigation.navigate('CompanyDataScreen', {
+            companyName: value
+          })
+        })
+    } catch (e) {
+      // saving error
+      console.log('Error: ', e);
+    }
+  }
+
 
   const checkEmpty = () => {
     if (newCompanyName === null || newCompanyName === '') {
@@ -66,7 +84,7 @@ const CustomDrawerContent = () => {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle={'light-content'} backgroundColor={COLORS.blue} />
+      <StatusBar barStyle={'dark-content'} backgroundColor={COLORS.blue} translucent />
       <View style={styles.upperContainer}>
         <TouchableOpacity style={styles.backButton}>
           <Image source={IconLinks.leftAngle} style={styles.backButtonIcon} />
@@ -104,7 +122,10 @@ const CustomDrawerContent = () => {
               renderItem={({ item, index }) => {
                 return (
                   <View>
-                    <TouchableOpacity style={styles.companyBtn}>
+                    <TouchableOpacity style={styles.companyBtn} onPress={() => {
+                      // console.log("CompanyName: ", item._data["companyName"]);
+                      setCurrentScreen(item._data["companyName"])
+                    }}>
                       <Text style={styles.companyBtnText}>{item._data["companyName"]}</Text>
                       {
                         index === 4 ?
@@ -136,18 +157,16 @@ export default CustomDrawerContent
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    // backgroundColor: COLORS.blue,
   },
   upperContainer: {
     backgroundColor: COLORS.blue,
     paddingHorizontal: RFPercentage(2.9),
-    paddingTop: Platform.OS === 'ios' ? RFPercentage(8) : null,
+    paddingTop: RFPercentage(8),  // 72px
   },
   backButton: {
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: RFPercentage(3),
-    // marginBottom: RFPercentage(5),
   },
   backButtonIcon: {
     width: RFPercentage(2),

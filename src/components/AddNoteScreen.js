@@ -1,13 +1,28 @@
-import { Image, Platform, SafeAreaView, StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
-import React from 'react'
+import { Image, Platform, StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import React, { useEffect, useState } from 'react'
 import { COLORS } from '../common/Colors'
 import { CommonStyles, fontSizeChart } from '../common/Styles'
 import { RFPercentage } from 'react-native-responsive-fontsize'
 import { IconLinks } from '../common/IconLinks'
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export default AddNoteScreen = () => {
+export default AddNoteScreen = ({ navigation }) => {
+  const [currCompany, setcurrCompany] = useState(null)
+  const getCurrentCompany = async () => {
+    try {
+      const currentCompany = await AsyncStorage.getItem('@currentCompany');
+      // console.log("Get Storage Value: ", currentCompany);
+    } catch (e) {
+      // read error
+      console.log('Error: ', e)
+    }
+  }
+
+  useEffect(() => {
+    getCurrentCompany()
+  }, [])
   return (
-    <SafeAreaView style={[styles.container, CommonStyles.screenPadding]}>
+    <View style={[styles.container, CommonStyles.screenPadding]}>
       <TextInput
         placeholder='Add a title to this entry'
         style={styles.txtInputContainer}
@@ -22,10 +37,12 @@ export default AddNoteScreen = () => {
           <Text style={styles.taskTxt}>Add</Text>
         </View>
       </View>
-      <TouchableOpacity style={styles.saveBtn}>
+      <TouchableOpacity style={styles.saveBtn} onPress={() => {
+        navigation.goBack("", { companyName: 'Company 444' })
+      }}>
         <Text style={styles.saveBtnTxt}>Save</Text>
       </TouchableOpacity>
-    </SafeAreaView>
+    </View>
   )
 }
 

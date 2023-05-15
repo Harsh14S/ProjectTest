@@ -14,12 +14,13 @@ export const CommonStyles = StyleSheet.create({
   },
   headerStyle: {
     width: '100%',
-    height: RFPercentage(8.1),
+    // height: RFPercentage(8.1),
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     backgroundColor: COLORS.white,
-    paddingBottom: RFPercentage(1.4),
+    paddingTop: RFPercentage(7.3), // 60px
+    paddingBottom: RFPercentage(3.5), // 29px
   }
 })
 
