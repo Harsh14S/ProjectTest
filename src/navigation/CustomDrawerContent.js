@@ -123,7 +123,7 @@ const CustomDrawerContent = ({ navigation }) => {
                 return (
                   <View>
                     <TouchableOpacity style={styles.companyBtn} onPress={() => {
-                      // console.log("CompanyName: ", item._data["companyName"]);
+                      // console.log("CompanyName: ", item);
                       setCurrentScreen(item._data["companyName"])
                     }}>
                       <Text style={styles.companyBtnText}>{item._data["companyName"]}</Text>

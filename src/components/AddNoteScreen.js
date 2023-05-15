@@ -5,19 +5,28 @@ import { CommonStyles, fontSizeChart } from '../common/Styles'
 import { RFPercentage } from 'react-native-responsive-fontsize'
 import { IconLinks } from '../common/IconLinks'
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import firestore from '@react-native-firebase/firestore';
 
 export default AddNoteScreen = ({ navigation }) => {
   const [currCompany, setcurrCompany] = useState(null)
   const getCurrentCompany = async () => {
     try {
       const currentCompany = await AsyncStorage.getItem('@currentCompany');
-      // console.log("Get Storage Value: ", currentCompany);
+      console.log("Get Storage Value NoteScreen: ", currentCompany);
+      setcurrCompany(currentCompany);
+      // return currentCompany;
     } catch (e) {
       // read error
       console.log('Error: ', e)
     }
   }
 
+  const addTaskTitle = async () => {
+    await firestore().collection('Companies')
+      .doc(currCompany).get().then((snap) => {
+        console.log(snap._data);
+      })
+  }
   useEffect(() => {
     getCurrentCompany()
   }, [])
@@ -38,7 +47,8 @@ export default AddNoteScreen = ({ navigation }) => {
         </View>
       </View>
       <TouchableOpacity style={styles.saveBtn} onPress={() => {
-        navigation.goBack("", { companyName: 'Company 444' })
+        // navigation.goBack("", { companyName: 'Company 444' })
+        addTaskTitle();
       }}>
         <Text style={styles.saveBtnTxt}>Save</Text>
       </TouchableOpacity>

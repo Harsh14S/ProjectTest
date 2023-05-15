@@ -6,32 +6,39 @@ import { IconLinks } from '../common/IconLinks'
 import { RFPercentage } from 'react-native-responsive-fontsize'
 import firestore from '@react-native-firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useIsFocused } from '@react-navigation/native'
 
 export default CompanyDataScreen = ({ route, navigation }) => {
-  const routeParams = route.params;
-  console.log('Params: ', routeParams);
-  console.log('Title: ', route.params);
+  const isFocused = useIsFocused();
+  const routeParams = route?.params?.companyName;
+  // console.log('Params: ', routeParams);
+  // console.log('Title: ', route.params);
   const [companyName, setcompanyName] = useState(null);
   const [companiesData, setcompaniesData] = useState(null);
 
+  useEffect(() => {
+    getCompany();
+  }, [routeParams])
 
-  // const getCompany = async () => {
-  //   await firestore().collection('Companies')
-  //     // .doc(routeParams)
-  //     .get()
-  //     .then(snap => {
-  //       // console.log("CompanyData: ", snap.docs[0]._data.companyName);
-  //       setcompanyName(snap.docs[0]._data.companyName)
+  const getCompany = async () => {
+    try {
+      await firestore().collection('Companies')
+        // .doc(routeParams)
+        .where('companyName', '==', routeParams)
+        .get()
+        .then(snap => {
+          // console.log("CompanyData: ", snap.docs[0]._data.companyName);
+          // console.log("doc ID: ", snap.docs[0].id);
+          setcompanyName(snap?.docs[0]?._data?.companyName)
 
-  //     }).catch((error) => {
-  //       console.log("error caught");
-  //       // setIsEmpty(true);
-  //     })
-  // }
-
-  // useEffect(() => {
-  //   getCompany();
-  // }, [])
+        }).catch((error) => {
+          console.log("error caught", error);
+          // setIsEmpty(true);
+        })
+    } catch (error) {
+      console.log("error: ", error);
+    }
+  }
 
   return <View style={[styles.container, CommonStyles.screenPadding]}>
     {/* <StatusBar barStyle={'dark-content'} backgroundColor={COLORS.white} /> */}
