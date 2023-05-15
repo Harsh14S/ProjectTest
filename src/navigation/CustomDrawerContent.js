@@ -1,12 +1,67 @@
 import { FlatList, Image, Platform, SafeAreaView, StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { COLORS } from '../common/Colors'
 import { IconLinks } from '../common/IconLinks'
 import { RFPercentage } from 'react-native-responsive-fontsize'
 import { fontSizeChart } from '../common/Styles'
-const arr = new Array(6);
+import firestore from '@react-native-firebase/firestore';
+import CustomerLoader from '../common/CommonComponents/CustomerLoader'
+
 const CustomDrawerContent = () => {
-  const [addCompany, setAddCompany] = useState(true);
+  const [addCompanyNew, setAddCompanyNew] = useState(false);
+  const [newCompanyName, setnewCompanyName] = useState(null);
+  const [companiesData, setcompaniesData] = useState(null);
+  const [isEmpty, setIsEmpty] = useState(false);
+
+  const checkEmpty = () => {
+    if (newCompanyName === null || newCompanyName === '') {
+      // console.log("NewCompanyName: ", newCompanyName);
+      console.log("Please Enter Something");
+    } else {
+
+      addNewCompany(newCompanyName);
+      setnewCompanyName(null);
+      console.log("NewCompanyName: ", newCompanyName);
+      console.log("Successfully added");
+    }
+  }
+
+  const addNewCompany = (compName) => {
+    firestore().collection('Companies').doc(compName).set({
+      "companyName": compName,
+      "createdAt": new Date(),
+    }).then(() => {
+      console.log("Added New Company: ", compName);
+    })
+  }
+
+  const getCompany = async () => {
+    await firestore().collection('Companies')
+      .orderBy('companyName')
+      .get()
+      .then(snap => {
+        // snap.docs.map((item) => console.log("Item: ", item._data["Company Name"]));
+        setcompaniesData(snap.docs);
+        // console.log("Snap: ", snap.docs);
+      }).catch((error) => {
+        console.log("error caught");
+        setIsEmpty(true);
+      })
+  }
+
+  useEffect(() => {
+    getCompany();
+  }, [])
+  useEffect(() => {
+    getCompany();
+    if (companiesData?.length === 0) {
+      setAddCompanyNew(true)
+    } else {
+      setAddCompanyNew(false)
+    }
+  }, [addNewCompany])
+
+
   return (
     <View style={styles.container}>
       <StatusBar barStyle={'light-content'} backgroundColor={COLORS.blue} />
@@ -22,37 +77,46 @@ const CustomDrawerContent = () => {
       </View>
       <View style={styles.lowerContainer}>
         {
-          addCompany ? <View style={styles.inputContainer}>
+          addCompanyNew ? <View style={styles.inputContainer}>
             <TextInput
+              value={newCompanyName}
               placeholder='Enter company name'
               style={styles.textInput}
+              onChangeText={(txt) => setnewCompanyName(txt)}
+              autoCapitalize={'sentences'}
+              maxLength={30}
             />
-            <TouchableOpacity style={styles.saveBtn}>
+            <TouchableOpacity style={styles.saveBtn} onPress={() => {
+              checkEmpty();
+              setAddCompanyNew(false);
+            }}>
               <Text style={styles.saveText}>SAVE</Text>
             </TouchableOpacity>
 
           </View> : null
         }
-        <FlatList
-          data={arr}
-          renderItem={({ item, index }) => {
-            return (
-              <View>
-                <TouchableOpacity style={styles.companyBtn}>
-                  <Text style={styles.companyBtnText}>Company {index + 1}</Text>
-                  {
-                    index === 4 ?
-                      <Image source={IconLinks.tickMark} style={styles.greenTickMark} /> : null
-                  }
-                </TouchableOpacity>
-                <View style={styles.dividerLine} />
-              </View>
-            )
-          }}
-          showsVerticalScrollIndicator={false}
-        />
+        {
+          companiesData ?
+            <FlatList
+              data={companiesData}
+              renderItem={({ item, index }) => {
+                return (
+                  <View>
+                    <TouchableOpacity style={styles.companyBtn}>
+                      <Text style={styles.companyBtnText}>{item._data["companyName"]}</Text>
+                      {
+                        index === 4 ?
+                          <Image source={IconLinks.tickMark} style={styles.greenTickMark} /> : null
+                      }
+                    </TouchableOpacity>
+                    <View style={styles.dividerLine} />
+                  </View>
+                )
+              }}
+              showsVerticalScrollIndicator={false}
+            /> : <CustomerLoader indiColor={COLORS.blue} />}
         <View style={styles.bottomBtnsContainer}>
-          <TouchableOpacity style={styles.addDataBtn}>
+          <TouchableOpacity style={styles.addDataBtn} onPress={() => { setAddCompanyNew(true) }}>
             <Image style={styles.addDataIcon} source={IconLinks.plus} />
           </TouchableOpacity>
           <TouchableOpacity style={styles.allCompanyDataBtn}>
@@ -120,7 +184,8 @@ const styles = StyleSheet.create({
     width: '100%',
     flexDirection: 'row',
     justifyContent: 'center',
-    alignItems: 'center'
+    alignItems: 'center',
+    marginVertical: RFPercentage(1)
   },
   textInput: {
     flex: 1,
@@ -141,7 +206,7 @@ const styles = StyleSheet.create({
   },
 
   companyBtnText: {
-    fontFamily: 'Montserrat-Regular',
+    fontFamily: 'Montserrat-SemiBold',
     fontSize: fontSizeChart._16px,
     color: COLORS.black,
   },

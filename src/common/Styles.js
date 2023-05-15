@@ -11,11 +11,22 @@ export const CommonStyles = StyleSheet.create({
   },
   screenPadding: {
     paddingHorizontal: RFPercentage(2.9), // 24px
+  },
+  headerStyle: {
+    width: '100%',
+    height: RFPercentage(8.1),
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: COLORS.white,
+    paddingBottom: RFPercentage(1.4),
   }
 })
 
+
 export const fontSizeChart = {
   _24px: RFPercentage(2.6),
+  _20px: RFPercentage(2),
   _18px: RFPercentage(2.2),
   _16px: RFPercentage(1.9),
   _14px: RFPercentage(1.7),

@@ -9,4 +9,5 @@ export const IconLinks = {
   leftAngle: require('../assets/Icons/leftAngle.png'),
   bookmark: require('../assets/Icons/bookmark.png'),
   tickMark: require('../assets/Icons/tick.png'),
+  bin: require('../assets/Icons/bin.png'),
 }

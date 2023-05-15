@@ -5,7 +5,7 @@ import { COLORS } from '../common/Colors'
 import { IconLinks } from '../common/IconLinks'
 import { RFPercentage } from 'react-native-responsive-fontsize'
 
-const DashboardAllScreen = () => {
+export default CompanyDataScreen = () => {
   return (
     <SafeAreaView style={[styles.container, CommonStyles.screenPadding]}>
       <View style={styles.headerTitle}>
@@ -38,8 +38,8 @@ const DashboardAllScreen = () => {
                 <Text style={{ fontSize: fontSizeChart._12px, color: COLORS.black }}>Test finish adsdas d d</Text>
               </View>
               <View style={{ flexDirection: 'row', marginBottom: 7 }}>
-                <Image source={IconLinks.radioButtonUnselected} style={styles.radioBTNsmall} />
-                <Text style={{ fontSize: fontSizeChart._12px, color: COLORS.black }}>White -- 25</Text>
+                <Image source={IconLinks.radioButtonSelected} style={styles.radioBTNsmall} />
+                <Text style={{ fontSize: fontSizeChart._12px, color: COLORS.black, textDecorationLine: 'line-through' }}>White -- 25</Text>
               </View>
               <View style={{ flexDirection: 'row', marginBottom: 7 }}>
                 <Image source={IconLinks.radioButtonUnselected} style={styles.radioBTNsmall} />
@@ -52,8 +52,6 @@ const DashboardAllScreen = () => {
     </SafeAreaView>
   )
 }
-
-export default DashboardAllScreen
 
 const styles = StyleSheet.create({
   container: {
