@@ -32,6 +32,7 @@ const CustomDrawerContent = () => {
       "createdAt": new Date(),
     }).then(() => {
       console.log("Added New Company: ", compName);
+      setAddCompanyNew(false);
     })
   }
 
@@ -56,9 +57,10 @@ const CustomDrawerContent = () => {
     getCompany();
     if (companiesData?.length === 0) {
       setAddCompanyNew(true)
-    } else {
-      setAddCompanyNew(false)
     }
+    // else {
+    //   setAddCompanyNew(false)
+    // }
   }, [addNewCompany])
 
 
