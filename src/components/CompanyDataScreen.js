@@ -1,4 +1,4 @@
-import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { CommonStyles, fontSizeChart } from '../common/Styles'
 import { COLORS } from '../common/Colors'
@@ -7,53 +7,73 @@ import { RFPercentage } from 'react-native-responsive-fontsize'
 import firestore from '@react-native-firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useIsFocused } from '@react-navigation/native'
+import CustomerLoader from '../common/CommonComponents/CustomerLoader';
+import { useDrawerStatus } from '@react-navigation/drawer';
 
 export default CompanyDataScreen = ({ route, navigation }) => {
   const isFocused = useIsFocused();
-  const routeParams = route?.params?.companyName;
-  // console.log('Params: ', routeParams);
-  // console.log('Title: ', route.params);
+  // const routeParams = route?.params?.companyName;
+  const isDrawerStatus = useDrawerStatus();
   const [companyName, setcompanyName] = useState(null);
   const [companiesData, setcompaniesData] = useState(null);
 
-  useEffect(() => {
-    getCompany();
-  }, [routeParams])
-
-  const getCompany = async () => {
+  const getCurrentCompany = async () => {
     try {
-      await firestore().collection('Companies')
-        // .doc(routeParams)
-        .where('companyName', '==', routeParams)
-        .get()
-        .then(snap => {
-          // console.log("CompanyData: ", snap.docs[0]._data.companyName);
-          // console.log("doc ID: ", snap.docs[0].id);
-          setcompanyName(snap?.docs[0]?._data?.companyName)
-
-        }).catch((error) => {
-          console.log("error caught", error);
-          // setIsEmpty(true);
-        })
-    } catch (error) {
-      console.log("error: ", error);
+      const currentCompany = await AsyncStorage.getItem('@currentCompany');
+      setcompanyName(currentCompany);
+    } catch (e) {
+      console.log('Error: ', e)
     }
   }
 
-  return <View style={[styles.container, CommonStyles.screenPadding]}>
-    {/* <StatusBar barStyle={'dark-content'} backgroundColor={COLORS.white} /> */}
-    <View style={styles.headerTitle}>
-      <View style={styles.verticalBoldLine} />
-      <View style={styles.sos}>
-        <Text style={styles.headerTitleTxt}>{companyName}</Text>
-        <TouchableOpacity>
-          <Image source={IconLinks.whatsapp} style={styles.whatsappIcon} />
-        </TouchableOpacity>
-      </View>
-    </View>
-    {
 
-      <View style={styles.tasksMainContainer}>
+  useEffect(() => {
+    // console.log('getCurr Company');
+    getCurrentCompany();
+  }, [isDrawerStatus === 'closed'])
+
+  const fireStoreData = async () => {
+    try {
+      await firestore().collection('Companies').onSnapshot(snap => {
+        // console.log("Snap: ", snap.docs);
+        snap.docs.map((item, index) => console.log("Item: ", item))
+      })
+      // const size = (await firestore().collection('Companies')
+      //   .doc(companyName).collection('DailyTask').get());
+      // console.log("Size: ", size.docs())
+
+      // await firestore().collection('Companies')
+      // .doc(companyName).collection('DailyTask').get().then(snap => {
+      // console.log("Snap: ", snap.docs);
+      // snap.forEach((item) => {
+      //   console.log("Item: ", item);
+      // })
+      // })
+    } catch (error) {
+      console.log("Error: ", error);
+    }
+  }
+  useEffect(() => {
+    fireStoreData();
+  }, [getCurrentCompany])
+
+
+  return companyName ?
+    <View style={[styles.container, CommonStyles.screenPadding]}>
+      {/* <StatusBar barStyle={'dark-content'} backgroundColor={COLORS.white} /> */}
+      <View style={styles.headerTitle}>
+        <View style={styles.verticalBoldLine} />
+        <View style={styles.sos}>
+          <Text style={styles.headerTitleTxt}>{companyName}</Text>
+          <TouchableOpacity>
+            <Image source={IconLinks.whatsapp} style={styles.whatsappIcon} />
+          </TouchableOpacity>
+        </View>
+      </View>
+      {/* <FlatList
+        data={}
+      /> */}
+      {/* <View style={styles.tasksMainContainer}>
         <View style={styles.taskDateAndDayContainer}>
           <Image style={styles.radioBTNbig} source={IconLinks.radioButtonUnselected} />
           <View style={styles.dateAndDayContainer}>
@@ -83,10 +103,9 @@ export default CompanyDataScreen = ({ route, navigation }) => {
             </View>
           </View>
         </View>
-      </View>}
-  </View>
+      </View> */}
+    </View> : <CustomerLoader indiColor={COLORS.blue} />
 }
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,

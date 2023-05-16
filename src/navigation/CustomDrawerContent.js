@@ -7,9 +7,11 @@ import { fontSizeChart } from '../common/Styles'
 import firestore from '@react-native-firebase/firestore';
 import CustomerLoader from '../common/CommonComponents/CustomerLoader';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useDrawerStatus } from '@react-navigation/drawer'
 
 
 const CustomDrawerContent = ({ navigation }) => {
+  const isDrawerStatus = useDrawerStatus();
   const [addCompanyNew, setAddCompanyNew] = useState(false);
   const [newCompanyName, setnewCompanyName] = useState(null);
   const [companiesData, setcompaniesData] = useState(null);
@@ -63,7 +65,7 @@ const CustomDrawerContent = ({ navigation }) => {
         setcompaniesData(snap.docs);
         // console.log("Snap: ", snap.docs);
       }).catch((error) => {
-        console.log("error caught");
+        console.log("error caught: ", error);
         setIsEmpty(true);
       })
   }
@@ -84,7 +86,7 @@ const CustomDrawerContent = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle={'dark-content'} backgroundColor={COLORS.blue} translucent />
+      <StatusBar barStyle={isDrawerStatus === 'open' ? 'light-content' : 'dark-content'} backgroundColor={isDrawerStatus === 'open' ? COLORS.blue : COLORS.white} translucent />
       <View style={styles.upperContainer}>
         <TouchableOpacity style={styles.backButton}>
           <Image source={IconLinks.leftAngle} style={styles.backButtonIcon} />
