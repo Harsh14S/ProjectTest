@@ -4,23 +4,33 @@ import { CommonStyles, fontSizeChart } from '../common/Styles'
 import { COLORS } from '../common/Colors'
 import { IconLinks } from '../common/IconLinks'
 import { RFPercentage } from 'react-native-responsive-fontsize'
-import firestore from '@react-native-firebase/firestore';
+import firestore, { firebase } from '@react-native-firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useIsFocused } from '@react-navigation/native'
 import CustomerLoader from '../common/CommonComponents/CustomerLoader';
 import { useDrawerStatus } from '@react-navigation/drawer';
+
+const dateObj = new Date();
+const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thur', 'Fri', 'Sat'];
 
 export default CompanyDataScreen = ({ route, navigation }) => {
   const isFocused = useIsFocused();
   // const routeParams = route?.params?.companyName;
   const isDrawerStatus = useDrawerStatus();
   const [companyName, setcompanyName] = useState(null);
-  const [companiesData, setcompaniesData] = useState(null);
+  const [companiesData, setcompaniesData] = useState(['abc']);
+  const [mainTitleArray, setMainTitleArray] = useState([]);
+  const [taskTitlesArray, setTaskTitlesArray] = useState([]);
+  const [taskArray, setTaskArray] = useState([])
 
   const getCurrentCompany = async () => {
     try {
-      const currentCompany = await AsyncStorage.getItem('@currentCompany');
-      setcompanyName(currentCompany);
+      await AsyncStorage.getItem('@currentCompany')
+        .then(snap => {
+          // console.log("Comany name: ", snap);
+          setcompanyName(snap);
+          // console.log("Company Name Updated......");
+        })
     } catch (e) {
       console.log('Error: ', e)
     }
@@ -32,31 +42,67 @@ export default CompanyDataScreen = ({ route, navigation }) => {
     getCurrentCompany();
   }, [isDrawerStatus === 'closed'])
 
-  const fireStoreData = async () => {
-    try {
-      await firestore().collection('Companies').onSnapshot(snap => {
-        // console.log("Snap: ", snap.docs);
-        snap.docs.map((item, index) => console.log("Item: ", item))
+  const demo = async () => {
+    await firestore().collection('Companies').doc(companyName)
+      .collection('DailyTask').get().then(dateTitle => {
+        // console.log("dateTitle: ", dateTitle.docs);
+        const arr = []
+        dateTitle.docs.map(dateTitleItem => {
+          // arr.push(dateTitleItem);
+          arr.push({ 'title': dateTitleItem.id, 'data': dateTitleItem.data() });
+          setMainTitleArray(arr);
+          // const arr1 = []
+          // dateTitleItem.ref.collection('Titles').onSnapshot(titles => {
+          //   titles.docs.map(titlesItem => {
+          // console.log(arr);
+          // arr1.push({ 'title': titlesItem.id, 'data': titlesItem.data() })
+          // console.log("Title: ", titlesItem.data());
+          // setTaskTitlesArray(arr1);
+
+          // taskTitlesArray.push(titlesItem._data);
+          // titlesItem.ref.collection('Tasks').onSnapshot(tasks => {
+          //   // console.log("Tasks size:---- ", tasks.size);
+          //   let abc = [];
+          //   tasks.docs.map(tasksItem => {
+          //     // console.log("Tasks:---- ", tasksItem.data());
+          //     // taskArray.push(tasksItem._data);
+          // })
+          // })
+          // })
+          // console.log("taskTitlesArray: ", taskTitlesArray)
+          //   })
+        })
+      }).then(() => {
+        mainTitleArray.map((item, index) => {
+          console.log(index);
+          demo2(item.title, index)
+        })
       })
-      // const size = (await firestore().collection('Companies')
-      //   .doc(companyName).collection('DailyTask').get());
-      // console.log("Size: ", size.docs())
-
-      // await firestore().collection('Companies')
-      // .doc(companyName).collection('DailyTask').get().then(snap => {
-      // console.log("Snap: ", snap.docs);
-      // snap.forEach((item) => {
-      //   console.log("Item: ", item);
-      // })
-      // })
-    } catch (error) {
-      console.log("Error: ", error);
-    }
   }
-  useEffect(() => {
-    fireStoreData();
-  }, [getCurrentCompany])
+  const demo2 = async (value, id) => {
+    await firestore().collection('Companies').doc(companyName)
+      .collection('DailyTask').doc(value)
+      .collection('Titles').get().then(snap => {
+        const arr = []
+        // console.log("Snap:----- ", snap.size);
+        snap.docs.map(titlesItem => {
+          // console.log("Items:---- ", titlesItem.data());
+          arr.push({ 'title': titlesItem.id, 'data': titlesItem.data() });
+        })
+        setTaskTitlesArray(arr)
+        // setMainTitleArray({...mainTitleArray})
+        mainTitleArray.map((item, index) => {
+          if (index === id) {
+            console.log(item);
+          }
+        })
+      })
+  }
 
+  useEffect(() => {
+    // setMainTitleArray([]);
+    demo();
+  }, [companyName !== null])
 
   return companyName ?
     <View style={[styles.container, CommonStyles.screenPadding]}>
@@ -71,39 +117,45 @@ export default CompanyDataScreen = ({ route, navigation }) => {
         </View>
       </View>
       {/* <FlatList
-        data={}
+        // style={{ backgroundColor: COLORS.blue }}
+        data={mainTitleArray}
+        renderItem={({ item, index }) => {
+          return (
+            <View style={styles.tasksMainContainer} key={index}>
+              <View style={styles.taskDateAndDayContainer}>
+                <Image style={styles.radioBTNbig} source={IconLinks.radioButtonUnselected} />
+                <View style={styles.dateAndDayContainer}>
+                  <Text style={styles.dateAndDayTxt}>{item.title}</Text>
+                  <Text style={styles.dateAndDayTxt}>{daysOfWeek[dateObj.getDay(item.createdAt)]}</Text>
+                </View>
+              </View>
+
+              <View style={styles.tasksSubContainer}>
+                <View style={styles.verticalLightLine} />
+                <View style={{ marginLeft: RFPercentage(2.6), marginBottom: RFPercentage(1.5) }}>
+                  <View>
+                    <Text style={{ fontSize: fontSizeChart._12px, color: COLORS.black, marginBottom: 7 }}>Title 01, <Text style={{ color: COLORS.grey }}>01:50 PM</Text></Text>
+                  </View>
+                  <View>
+                    <View style={{ flexDirection: 'row', marginBottom: 7 }}>
+                      <Image source={IconLinks.radioButtonUnselected} style={styles.radioBTNsmall} />
+                      <Text style={{ fontSize: fontSizeChart._12px, color: COLORS.black }}>Test finish adsdas d d</Text>
+                    </View>
+                    <View style={{ flexDirection: 'row', marginBottom: 7 }}>
+                      <Image source={IconLinks.radioButtonSelected} style={styles.radioBTNsmall} />
+                      <Text style={{ fontSize: fontSizeChart._12px, color: COLORS.black, textDecorationLine: 'line-through' }}>White -- 25</Text>
+                    </View>
+                    <View style={{ flexDirection: 'row', marginBottom: 7 }}>
+                      <Image source={IconLinks.radioButtonUnselected} style={styles.radioBTNsmall} />
+                      <Text style={{ fontSize: fontSizeChart._12px, color: COLORS.black }}>gray - 40 asdas d ds</Text>
+                    </View>
+                  </View>
+                </View>
+              </View>
+            </View>
+          )
+        }}
       /> */}
-      {/* <View style={styles.tasksMainContainer}>
-        <View style={styles.taskDateAndDayContainer}>
-          <Image style={styles.radioBTNbig} source={IconLinks.radioButtonUnselected} />
-          <View style={styles.dateAndDayContainer}>
-            <Text style={styles.dateAndDayTxt}>12 Jan, 2023</Text>
-            <Text style={styles.dateAndDayTxt}>Wed</Text>
-          </View>
-        </View>
-        <View style={styles.tasksSubContainer}>
-          <View style={styles.verticalLightLine} />
-          <View style={{ marginLeft: RFPercentage(2.6), marginBottom: RFPercentage(1.5) }}>
-            <View>
-              <Text style={{ fontSize: fontSizeChart._12px, color: COLORS.black, marginBottom: 7 }}>Title 01, <Text style={{ color: COLORS.grey }}>01:50 PM</Text></Text>
-            </View>
-            <View>
-              <View style={{ flexDirection: 'row', marginBottom: 7 }}>
-                <Image source={IconLinks.radioButtonUnselected} style={styles.radioBTNsmall} />
-                <Text style={{ fontSize: fontSizeChart._12px, color: COLORS.black }}>Test finish adsdas d d</Text>
-              </View>
-              <View style={{ flexDirection: 'row', marginBottom: 7 }}>
-                <Image source={IconLinks.radioButtonSelected} style={styles.radioBTNsmall} />
-                <Text style={{ fontSize: fontSizeChart._12px, color: COLORS.black, textDecorationLine: 'line-through' }}>White -- 25</Text>
-              </View>
-              <View style={{ flexDirection: 'row', marginBottom: 7 }}>
-                <Image source={IconLinks.radioButtonUnselected} style={styles.radioBTNsmall} />
-                <Text style={{ fontSize: fontSizeChart._12px, color: COLORS.black }}>gray - 40 asdas d ds</Text>
-              </View>
-            </View>
-          </View>
-        </View>
-      </View> */}
     </View> : <CustomerLoader indiColor={COLORS.blue} />
 }
 const styles = StyleSheet.create({

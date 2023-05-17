@@ -49,7 +49,7 @@ const CustomDrawerContent = ({ navigation }) => {
   const addNewCompany = (compName) => {
     firestore().collection('Companies').doc(compName).set({
       "companyName": compName,
-      "createdAt": new Date(),
+      "createdAt": new Date().getTime(),
     }).then(() => {
       console.log("Added New Company: ", compName);
       setAddCompanyNew(false);
@@ -88,7 +88,7 @@ const CustomDrawerContent = ({ navigation }) => {
     <View style={styles.container}>
       <StatusBar barStyle={isDrawerStatus === 'open' ? 'light-content' : 'dark-content'} backgroundColor={isDrawerStatus === 'open' ? COLORS.blue : COLORS.white} translucent />
       <View style={styles.upperContainer}>
-        <TouchableOpacity style={styles.backButton}>
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.closeDrawer()}>
           <Image source={IconLinks.leftAngle} style={styles.backButtonIcon} />
           <Text style={styles.backButtonText}>Back</Text>
         </TouchableOpacity>

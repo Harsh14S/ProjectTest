@@ -7,10 +7,9 @@ import { IconLinks } from '../common/IconLinks'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import firestore from '@react-native-firebase/firestore';
 
-let days = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
 const dateObj = new Date();
 const currentTime = dateObj.getTime();
-const currentDate = dateObj.getDate() + ' ' + dateObj.toLocaleString('default', { month: 'short' }) + ', ' + dateObj.getFullYear();
+const currentDate = 11 + ' ' + dateObj.toLocaleString('default', { month: 'short' }) + ', ' + dateObj.getFullYear();
 
 export default AddNoteScreen = ({ navigation }) => {
   const [currCompany, setcurrCompany] = useState(null);
@@ -29,27 +28,82 @@ export default AddNoteScreen = ({ navigation }) => {
     }
   }
 
-  const addNewtaskTitleCollection = async () => {
-    await firestore().collection('Companies')
-      .doc(currCompany)
-      .collection('DailyTask')
-      .doc(currentDate).set({ title: titleValue, tasks: taskArray, createdAt: new Date() })
-      .then(() => {
-        console.log('collection Created');
-        navigation.goBack()
+  const checkIfCurrentDayExists = async () => {
+    await firestore().collection('Companies').doc(currCompany)
+      .collection('DailyTask').doc(currentDate)
+      .onSnapshot(snap => {
+        // console.log("DailyTask: ", snap._data);
+        if (snap.exists) {
+          // console.log("DailyTask Already Exists");
+          checkIfCurrentTaskExists();
+        }
+        else {
+          console.log("New DailyTask Created");
+          // console.log("DailyTask Path: ", snap.ref.path);
+          snap.ref.set({ 'title': currentDate, 'createdAt': currentTime })
+            .then(() => {
+              // console.log("Data Added successfully");
+              checkIfCurrentTaskExists();
+            })
+        }
       })
   }
 
+  const checkIfCurrentTaskExists = async () => {
+    await firestore().collection('Companies').doc(currCompany)
+      .collection('DailyTask').doc(currentDate)
+      .collection('Titles').doc(titleValue)
+      .onSnapshot(snap => {
+        // console.log("Title exists: ", snap.id);
+        if (snap.exists) {
+          // console.log("Title Already Exists");
+          checkIfCurrentSubTaskExists(taskArray);
+        }
+        else {
+          console.log("New Title Created");
+          // console.log("Title Path: ", snap.ref.path);
+          snap.ref.set({ 'title': titleValue, 'createdAt': currentTime })
+            .then(() => {
+              // console.log("Data Added successfully");
+              checkIfCurrentSubTaskExists(taskArray);
+            })
+        }
+      })
+  }
+
+  const checkIfCurrentSubTaskExists = async (value) => {
+    // console.log("TaskArray: ", value);
+    await value.map((item, index) => {
+      console.log("TaskArray: ", index);
+      firestore().collection('Companies').doc(currCompany)
+        .collection('DailyTask').doc(currentDate)
+        .collection('Titles').doc(titleValue)
+        .collection('Tasks').doc(item)
+        .onSnapshot(snap => {
+          console.log("Task exists: ", snap.exists);
+          if (snap.exists) {
+            console.log("Task Already Exists");
+          }
+          else {
+            console.log("New Task Created");
+            // console.log("Title Path: ", snap.ref.path);
+            snap.ref.set({ 'taskName': item, 'createdAt': currentTime, completeStatus: false })
+              .then(() => {
+                console.log("Data Added successfully");
+              })
+          }
+        })
+    })
+    navigation.goBack();
+  }
+
   const appendArr = () => {
-    console.log("ArrAppend: ", taskArray);
+    // console.log("ArrAppend: ", taskArray);
     let dump = taskArray;
-    dump.push({
-      'task': addNewTaskTxt,
-      'completeStatus': false,
-    });
+    dump.push(addNewTaskTxt);
     setTaskArray(dump);
     setAddNewTaskTxt(null);
-    console.log("Arr: ", dump);
+    // console.log("Arr: ", dump);
   }
 
   useEffect(() => {
@@ -78,7 +132,7 @@ export default AddNoteScreen = ({ navigation }) => {
                     <TouchableOpacity style={styles.radioBtnContainer}>
                       <Image source={IconLinks.radioButtonUnselected} style={styles.radioBtnIcon} />
                     </TouchableOpacity>
-                    <Text style={styles.taskTxt}>{item.task}</Text>
+                    <Text style={styles.taskTxt}>{item}</Text>
                   </View>
 
                 )
@@ -100,10 +154,13 @@ export default AddNoteScreen = ({ navigation }) => {
         </View>
       </View>
       <TouchableOpacity style={styles.saveBtn} onPress={() => {
-        // navigation.goBack("", { companyName: 'Company 444' })
-        // addTaskTitle();
-        taskArray !== [] && titleValue !== null ? addNewtaskTitleCollection() : console.log("Please fill the details");
-        // console.log("Upload: ", { titleValue: taskArray, createdAt: new Date() });
+
+        taskArray !== [] && titleValue !== null ?
+          // checkIfTaskExists()
+          checkIfCurrentDayExists()
+          // console.log({ title: titleValue, tasks: taskArray, createdAt: currentTime })
+          : console.log("Please fill the details");
+
       }}>
         <Text style={styles.saveBtnTxt}>Save</Text>
       </TouchableOpacity>
