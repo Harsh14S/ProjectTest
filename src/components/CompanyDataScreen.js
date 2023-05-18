@@ -13,17 +13,14 @@ import { useDrawerStatus } from '@react-navigation/drawer';
 const dateObj = new Date();
 const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thur', 'Fri', 'Sat'];
 
+
 export default CompanyDataScreen = ({ route, navigation }) => {
   const isFocused = useIsFocused();
-  // const routeParams = route?.params?.companyName;
   const isDrawerStatus = useDrawerStatus();
   const [companyName, setcompanyName] = useState(null);
-  const [companiesData, setcompaniesData] = useState(['abc']);
   const [mainTitleArray, setMainTitleArray] = useState([]);
   const [dailyTaskTitleArray, setDailyTaskTitleArray] = useState([]);
   const [taskTitlesArray, setTaskTitlesArray] = useState([]);
-  const [taskArray, setTaskArray] = useState([]);
-  const [roughArr, setRoughArr] = useState([]);
 
   const getCurrentCompany = async () => {
     try {
@@ -31,137 +28,32 @@ export default CompanyDataScreen = ({ route, navigation }) => {
         .then(snap => {
           // console.log("Comany name: ", snap);
           setcompanyName(snap);
+          dailyTaskFetchers(snap);
           // console.log("Company Name Updated......");
         })
     } catch (e) {
       console.log('Error: ', e)
     }
   }
+  useEffect(() => {
+    dailyTaskFetchers(companyName);
+  }, [mainTitleArray === []])
 
-  const demo = async () => {
-    await firestore().collection('Companies').doc(companyName)
-      .collection('DailyTask').get().then(dateTitle => {
-        // console.log("dateTitle: ", dateTitle.docs);
-        const arr = []
-        dateTitle.docs.map(dateTitleItem => {
-          // arr.push(dateTitleItem);
-          arr.push({ 'title': dateTitleItem.id, 'data': dateTitleItem.data() });
-          setMainTitleArray(arr);
-          // const arr1 = []
-          // dateTitleItem.ref.collection('Titles').onSnapshot(titles => {
-          //   titles.docs.map(titlesItem => {
-          // console.log(arr);
-          // arr1.push({ 'title': titlesItem.id, 'data': titlesItem.data() })
-          // console.log("Title: ", titlesItem.data());
-          // setTaskTitlesArray(arr1);
-
-          // taskTitlesArray.push(titlesItem._data);
-          // titlesItem.ref.collection('Tasks').onSnapshot(tasks => {
-          //   // console.log("Tasks size:---- ", tasks.size);
-          //   let abc = [];
-          //   tasks.docs.map(tasksItem => {
-          //     // console.log("Tasks:---- ", tasksItem.data());
-          //     // taskArray.push(tasksItem._data);
-          // })
-          // })
-          // })
-          // console.log("taskTitlesArray: ", taskTitlesArray)
-          //   })
-        })
-      }).then(() => {
-        mainTitleArray.map((item, index) => {
-          console.log(index);
-          demo2(item.title, index)
-        })
-      })
-  }
-  // const demo2 = async (value, id) => {
-  //   await firestore().collection('Companies').doc(companyName)
-  //     .collection('DailyTask').doc(value)
-  //     .collection('Titles').get().then(snap => {
-  //       const arr = []
-  //       // console.log("Snap:----- ", snap.size);
-  //       snap.docs.map(titlesItem => {
-  //         // console.log("Items:---- ", titlesItem.data());
-  //         arr.push({ 'title': titlesItem.id, 'data': titlesItem.data() });
-  //       })
-  //       setTaskTitlesArray(arr)
-  //       // setMainTitleArray({...mainTitleArray})
-  //       mainTitleArray.map((item, index) => {
-  //         if (index === id) {
-  //           // console.log(item);
-  //           setMainTitleArray([...mainTitleArray, mainTitleArray[index]])
-  //         }
-  //       })
-  //     })
-  // }
-
-  const dataFetching = async () => {
-    firestore().collection('Companies').doc(companyName)
-      .onSnapshot(companyNameSnap => {
-        if (companyNameSnap.exists) {
-          // console.log("companyNameSnap: ", companyNameSnap);
-          companyNameSnap.ref.collection('DailyTask').onSnapshot(dailyTaskSnap => {
-            const dailyTaskSnapArray = [];
-            dailyTaskSnap.docs.map((dailyTaskSnapMap) => {
-              if (dailyTaskSnapMap.exists) {
-                // console.log("dailyTaskSnapMap: ", dailyTaskSnapMap.data());
-                dailyTaskSnapMap.ref.collection('Titles').onSnapshot(titlesSnap => {
-                  const titlesSnapArray = [];
-                  // console.log("titlesSnap: ", titlesSnap.docs.length)
-                  titlesSnap.docs.map((titlesSnapMap) => {
-                    if (titlesSnapMap.exists) {
-                      // console.log("titlesSnapMap: ", titlesSnapMap.data());
-                      const tasksSnapArray = []
-                      titlesSnapMap.ref.collection('Tasks').onSnapshot(tasksSnap => {
-                        // console.log("tasksSnap: ", tasksSnap.docs.length);
-                        tasksSnap.docs.map((tasksSnapMap) => {
-                          // console.log("tasksSnapMap: ", tasksSnapMap.data());
-                          if (tasksSnapMap.exists) {
-                            tasksSnapArray.push(tasksSnapMap.data());
-                          }
-                        })
-                        titlesSnapArray.push({ 'info': titlesSnapMap.data(), 'tasks': tasksSnapArray });
-                        // console.log("tasksSnapArray: ", tasksSnapArray)
-                        console.log("titlesSnapArray: ", titlesSnapArray);
-                        // setTaskTitlesArray(titlesSnapArray);
-                        // dailyTaskSnapArray.push({})
-
-                      })
-                      // console.log("TaskTitlesArray: ", taskTitlesArray.length)
-                    }
-                  })
-                  // console.log("dailyTaskSnapMap: ", dailyTaskSnapMap.data())
-                  // console.log("TaskTitlesArray: ", taskTitlesArray)
-                })
-              }
-            })
-            // console.log("companyNameSnap: ", companyNameSnap);
-            // companyNameSnap.ref.collection('DailyTask').onSnapshot(dailyTaskSnap => {
-            //   console.log("dailyTaskSnap: ", dailyTaskSnap.docs[0].data())
-            // })
-          })
-        }
-      })
-  }
-
-  const dailyTaskFetchers = async () => {
+  const dailyTaskFetchers = async (currentCompany) => {
     const dailyTaskArray = []
-    await firestore().collection('Companies').doc(companyName)
-      .collection('DailyTask').onSnapshot(snap => {
-
+    await firestore().collection('Companies').doc(currentCompany)
+      .collection('DailyTask').get()
+      // .onSnapshot(snap => {
+      .then(snap => {
         snap.docs.map(async (item, index) => {
-
           // console.log("dailyTaskFetchers log -----> ", item.id);
-          dailyTaskArray.push(item.data())
-          const a = await titlesFetchers(item.id) // function
-          // console.log(item.id, " ----> ", a);
-          // a.docs.map(items => {
-          //   console.log(items.id, " ----> ", items.data());
-          // })
+          await titlesFetchers(item.id).then(
+            sn => {
+              dailyTaskArray.push({ 'data': sn, 'title': item.id })
+              setMainTitleArray(dailyTaskArray);// function
+            }
+          )
         })
-        // setDailyTaskTitleArray(dailyTaskArray)
-        // console.log("dailyTaskArray: ", dailyTaskArray);
       })
   }
 
@@ -171,25 +63,30 @@ export default CompanyDataScreen = ({ route, navigation }) => {
     // console.log("dailyTaskID: ", dailyTaskID);
     await firestore().collection('Companies').doc(companyName)
       .collection('DailyTask').doc(dailyTaskID)
-      .collection('Titles')
-      .get()
-
+      .collection('Titles').get()
       // console.log("Data: ", data);
       .then(snap => {
         snap.docs.map(async (item, index) => {
-          const happy = await taskFetcher(item.id, dailyTaskID);
           // console.log(item.id, " -> ", happy);
           // console.log("Snap: ", item.data());
-          titlesArray.push(item.data())
+          await taskFetcher(item.id, dailyTaskID).then(
+            sn => {
+              // console.log(item.id, ' -> ', sn);
+              titlesArray.push({ 'data': sn, 'title': item.id })
+              setDailyTaskTitleArray(titlesArray);
+            }
+          )
+          // console.log(item.id, " -> ", happy)
+          // setTaskTitlesArray(titlesArray);
+          // console.log('array------> ', JSON.stringify(titlesArray));
         })
-        // console.log("titlesArray: ", titlesArray);
-        // setTaskTitlesArray(titlesArray);
       })
-    return titlesArray;
+    // console.log("dailyTaskTitleArray: ", dailyTaskTitleArray);
+    return dailyTaskTitleArray;
   }
 
   const taskFetcher = async (titlesID, dailyTaskID) => {
-    // console.log("titlesID: ", titlesID);
+    console.log(titlesID, ' && ', dailyTaskID);
     const taskArray = [];
 
     await firestore().collection('Companies').doc(companyName)
@@ -199,24 +96,19 @@ export default CompanyDataScreen = ({ route, navigation }) => {
       .then(snap => {
         snap.docs.map(async (item, index) => {
           // console.log(item.id, " -> ", item.data());
-          taskArray.push({ 'data': item.data() })
+          taskArray.push({ 'data': item.data(), 'title': item.id })
+          // arr3 = taskArray;
         })
-        console.log("TaskArray: ----> ", taskArray);
         // setTaskTitlesArray(titlesArray);
       })
+    // console.log("TaskArray: ----> ", arr3);
     return taskArray;
-
-
   }
 
   useEffect(() => {
     // console.log('getCurr Company');
     getCurrentCompany();
   }, [isDrawerStatus === 'closed'])
-
-  useEffect(() => {
-    dailyTaskFetchers()
-  }, [companyName !== null])
 
   return companyName ?
     <View style={[styles.container, CommonStyles.screenPadding]}>
@@ -232,21 +124,11 @@ export default CompanyDataScreen = ({ route, navigation }) => {
       </View>
 
       <FlatList
-        data={roughArr}
-        renderItem={({ item, index }) => {
-          console.log("RoughItems Map: ", item);
-          // return (
-          //   <View>
-          //     <Text></Text>
-          //   </View>
-          // )
-        }}
-      />
-
-      {/* <FlatList
+        showsVerticalScrollIndicator={false}
         // style={{ backgroundColor: COLORS.blue }}
         data={mainTitleArray}
         renderItem={({ item, index }) => {
+          // console.log("item:--- ", JSON.stringify(item));
           return (
             <View style={styles.tasksMainContainer} key={index}>
               <View style={styles.taskDateAndDayContainer}>
@@ -256,33 +138,40 @@ export default CompanyDataScreen = ({ route, navigation }) => {
                   <Text style={styles.dateAndDayTxt}>{daysOfWeek[dateObj.getDay(item.createdAt)]}</Text>
                 </View>
               </View>
-
-              <View style={styles.tasksSubContainer}>
-                <View style={styles.verticalLightLine} />
-                <View style={{ marginLeft: RFPercentage(2.6), marginBottom: RFPercentage(1.5) }}>
-                  <View>
-                    <Text style={{ fontSize: fontSizeChart._12px, color: COLORS.black, marginBottom: 7 }}>Title 01, <Text style={{ color: COLORS.grey }}>01:50 PM</Text></Text>
-                  </View>
-                  <View>
-                    <View style={{ flexDirection: 'row', marginBottom: 7 }}>
-                      <Image source={IconLinks.radioButtonUnselected} style={styles.radioBTNsmall} />
-                      <Text style={{ fontSize: fontSizeChart._12px, color: COLORS.black }}>Test finish adsdas d d</Text>
+              <FlatList
+                scrollEnabled={false}
+                data={item.data}
+                renderItem={({ item: note, index: noteIndex }) => {
+                  // console.log("Note:--- ", JSON.stringify(note));
+                  return (
+                    <View style={styles.tasksSubContainer}>
+                      <View style={styles.verticalLightLine} />
+                      <View style={{ marginLeft: RFPercentage(2.6), marginBottom: RFPercentage(1.5) }}>
+                        <View>
+                          <Text style={{ fontSize: fontSizeChart._12px, color: COLORS.black, marginBottom: 7 }}>{note.title}, <Text style={{ color: COLORS.grey }}>01:50 PM</Text></Text>
+                        </View>
+                        <FlatList
+                          scrollEnabled={false}
+                          data={note.data}
+                          renderItem={({ item: task, index: taskIndex }) => {
+                            // console.log("Task: ", task);
+                            return (
+                              <View style={{ flexDirection: 'row', marginBottom: 7 }}>
+                                <Image source={IconLinks.radioButtonUnselected} style={styles.radioBTNsmall} />
+                                <Text style={{ fontSize: fontSizeChart._12px, color: COLORS.black }}>{task.data.taskName}</Text>
+                              </View>
+                            )
+                          }}
+                        />
+                      </View>
                     </View>
-                    <View style={{ flexDirection: 'row', marginBottom: 7 }}>
-                      <Image source={IconLinks.radioButtonSelected} style={styles.radioBTNsmall} />
-                      <Text style={{ fontSize: fontSizeChart._12px, color: COLORS.black, textDecorationLine: 'line-through' }}>White -- 25</Text>
-                    </View>
-                    <View style={{ flexDirection: 'row', marginBottom: 7 }}>
-                      <Image source={IconLinks.radioButtonUnselected} style={styles.radioBTNsmall} />
-                      <Text style={{ fontSize: fontSizeChart._12px, color: COLORS.black }}>gray - 40 asdas d ds</Text>
-                    </View>
-                  </View>
-                </View>
-              </View>
+                  )
+                }}
+              />
             </View>
           )
         }}
-      /> */}
+      />
     </View> : <CustomerLoader indiColor={COLORS.blue} />
 }
 const styles = StyleSheet.create({
