@@ -150,12 +150,15 @@ export default CompanyDataScreen = ({ route, navigation }) => {
     await firestore().collection('Companies').doc(companyName)
       .collection('DailyTask').onSnapshot(snap => {
 
-        snap.docs.map((item, index) => {
+        snap.docs.map(async (item, index) => {
 
-          console.log("dailyTaskFetchers log -----> ", item.id);
+          // console.log("dailyTaskFetchers log -----> ", item.id);
           dailyTaskArray.push(item.data())
-          const a = titlesFetchers(item.id)  // function
-          // console.log(JSON.stringify(a));
+          const a = await titlesFetchers(item.id) // function
+          // console.log(item.id, " ----> ", a);
+          // a.docs.map(items => {
+          //   console.log(items.id, " ----> ", items.data());
+          // })
         })
         // setDailyTaskTitleArray(dailyTaskArray)
         // console.log("dailyTaskArray: ", dailyTaskArray);
@@ -165,26 +168,44 @@ export default CompanyDataScreen = ({ route, navigation }) => {
   const titlesFetchers = async (dailyTaskID) => {
 
     const titlesArray = [];
-    console.log("dailyTaskID: ", dailyTaskID);
+    // console.log("dailyTaskID: ", dailyTaskID);
     await firestore().collection('Companies').doc(companyName)
       .collection('DailyTask').doc(dailyTaskID)
-      .collection('Titles').onSnapshot(snap => {
-        snap.docs.map((item, index) => {
-          // console.log("Snap: ", item.id);
-          titlesArray.push(item.id)
+      .collection('Titles')
+      .get()
+
+      // console.log("Data: ", data);
+      .then(snap => {
+        snap.docs.map(async (item, index) => {
+          const happy = await taskFetcher(item.id, dailyTaskID);
+          // console.log(item.id, " -> ", happy);
+          // console.log("Snap: ", item.data());
+          titlesArray.push(item.data())
         })
+        // console.log("titlesArray: ", titlesArray);
         // setTaskTitlesArray(titlesArray);
-        console.log(dailyTaskID, ": ", titlesArray);
       })
     return titlesArray;
   }
 
-  const taskFetcher = async (titlesID) => {
-    console.log("titlesID: ", titlesID);
+  const taskFetcher = async (titlesID, dailyTaskID) => {
+    // console.log("titlesID: ", titlesID);
     const taskArray = [];
-    // await firestore().collection('Companies').doc(companyName)
-    //   .collection('DailyTask').doc(dailyTaskID)
-    //   .collection('Titles')
+
+    await firestore().collection('Companies').doc(companyName)
+      .collection('DailyTask').doc(dailyTaskID)
+      .collection('Titles').doc(titlesID)
+      .collection('Tasks').get()
+      .then(snap => {
+        snap.docs.map(async (item, index) => {
+          // console.log(item.id, " -> ", item.data());
+          taskArray.push({ 'data': item.data() })
+        })
+        console.log("TaskArray: ----> ", taskArray);
+        // setTaskTitlesArray(titlesArray);
+      })
+    return taskArray;
+
 
   }
 
