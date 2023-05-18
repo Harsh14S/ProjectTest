@@ -9,7 +9,7 @@ import firestore from '@react-native-firebase/firestore';
 
 const dateObj = new Date();
 const currentTime = dateObj.getTime();
-const currentDate = 11 + ' ' + dateObj.toLocaleString('default', { month: 'short' }) + ', ' + dateObj.getFullYear();
+const currentDate = dateObj.getDate() + ' ' + dateObj.toLocaleString('default', { month: 'short' }) + ', ' + dateObj.getFullYear();
 
 export default AddNoteScreen = ({ navigation }) => {
   const [currCompany, setcurrCompany] = useState(null);
@@ -20,7 +20,7 @@ export default AddNoteScreen = ({ navigation }) => {
   const getCurrentCompany = async () => {
     try {
       const currentCompany = await AsyncStorage.getItem('@currentCompany');
-      console.log("Get Storage Value NoteScreen: ", currentCompany);
+      // console.log("Get Storage Value NoteScreen: ", currentCompany);
       setcurrCompany(currentCompany);
     } catch (e) {
       // read error
