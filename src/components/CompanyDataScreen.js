@@ -9,6 +9,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useIsFocused } from '@react-navigation/native'
 import CustomerLoader from '../common/CommonComponents/CustomerLoader';
 import { useDrawerStatus } from '@react-navigation/drawer';
+import { useDispatch, useSelector } from 'react-redux'
+import { addCompanyData } from '../redux/reducers/Reducer'
 
 const dateObj = new Date();
 const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thur', 'Fri', 'Sat'];
@@ -17,9 +19,13 @@ let arr1 = [];
 let arr2 = [];
 
 export default CompanyDataScreen = ({ route, navigation }) => {
+  const companyReducer = useSelector((state) => state.companyReducer)
+  const dispatch = useDispatch();
+
   const isFocused = useIsFocused();
   const isDrawerStatus = useDrawerStatus();
-  const [companyName, setcompanyName] = useState(null);
+  const [companyData, setcompanyData] = useState(null);
+  const [currentCompanyData, setCurrentCompanyData] = useState(null);
   const [mainTitleArray, setMainTitleArray] = useState([]);
   const [dailyTaskTitleArray, setDailyTaskTitleArray] = useState([]);
   const [dailySubTaskTitleArray, setDailySubTaskTitleArray] = useState([]);
@@ -29,124 +35,35 @@ export default CompanyDataScreen = ({ route, navigation }) => {
     try {
       await AsyncStorage.getItem('@currentCompany')
         .then(snap => {
-          // console.log("Comany name: ", snap);
-          setcompanyName(snap)
-          dailyTaskFetchers(snap)
+          // console.log("Comany name: ", JSON.parse(snap));
+          const abc = JSON.parse(snap);
+          setcompanyData(abc);
+          const result = companyReducer.company.findIndex((cur) => cur.companyName === abc.companyName)
+          // console.log(result)
+          setCurrentCompanyData(result); // index
+          // dailyTaskFetchers(snap)
           // console.log("Company Name Updated......");
+        }).then(() => {
+          // console.log(companyData)
         })
     } catch (e) {
       console.log('Error: ', e)
     }
   }
 
-  const setCurrentScreen = async (value) => {
-    try {
-      await AsyncStorage.setItem('@currentCompany', value)
-        .then(() => {
-          console.log("currentCompany is successfully set ");
-        })
-    } catch (e) {
-      console.log('Error: ', e);
-    }
-  }
-
-  const dailyTaskFetchers = async (currentCompany) => {
-    const dailyTaskArray = []
-    await firestore().collection('Companies').doc(currentCompany)
-      .collection('DailyTask').get()
-      // .onSnapshot(snap => {
-      .then(snap => {
-        // console.log(snap.docs, 'Snap......');
-        // setSnap2(snap)
-        snap.docs.map(async (item, index) => {
-          // console.log("dailyTaskFetchers log -----> ", item.id);
-          // setMainTitleArray([]);
-          await titlesFetchers(item.id).then(
-            sn => {
-              // console.log("Data of ", item.id, ": ", JSON.stringify(sn));
-              dailyTaskArray.push({ 'data': sn, 'title': item.id })
-              setMainTitleArray(dailyTaskArray);// function
-            }
-          )
-        })
-      })
-  }
-
-
-  const titlesFetchers = async (dailyTaskID) => {
-    const titlesArray = [];
-    // console.log("dailyTaskID: ", dailyTaskID);
-    await firestore().collection('Companies').doc(companyName)
-      .collection('DailyTask').doc(dailyTaskID)
-      .collection('Titles').get()
-      // console.log("Data: ", data);
-      .then(snap => {
-        let titlesSubArray = [];
-        snap.docs.map(async (item, index) => {
-          // console.log(item.id, " -> ", happy);
-          // console.log("Snap: ", item.data());
-          setDailyTaskTitleArray([])
-          await taskFetcher(item.id, dailyTaskID).then(
-            sn => {
-              // console.log(item.id, ' -> ', sn);
-              titlesArray.push({ 'data': sn, 'title': item.id })
-              // console.log('Title Array', JSON.stringify(titlesArray));
-              // if (snap.size === index + 1) {
-              // }
-              setDailyTaskTitleArray(titlesArray);
-              // titlesSubArray = titlesArray;
-            }
-          )
-          // titlesSubArray.push(titlesArray);
-          // console.log(item.id, " -> ", happy)
-          // setTaskTitlesArray(titlesArray);
-          // console.log(item.id, ' ------> ', JSON.stringify(titlesArray));
-          if (snap.size === index + 1) {
-            // console.log(' ------> ', JSON.stringify(titlesArray));
-            // dailyTaskTitleArray.push(titlesSubArray)
-            // arr1.push(titlesSubArray);
-            setDailySubTaskTitleArray(titlesArray)
-          }
-        })
-        // console.log(' ------> ', JSON.stringify(dailySubTaskTitleArray));
-        // return
-      })
-    // console.log("dailyTaskTitleArray: ", JSON.stringify(arr1));
-    return dailyTaskTitleArray;
-  }
-
-  const taskFetcher = async (titlesID, dailyTaskID) => {
-    // console.log(titlesID, ' && ', dailyTaskID);
-    const taskArray = [];
-
-    await firestore().collection('Companies').doc(companyName)
-      .collection('DailyTask').doc(dailyTaskID)
-      .collection('Titles').doc(titlesID)
-      .collection('Tasks').get()
-      .then(snap => {
-        snap.docs.map(async (item, index) => {
-          taskArray.push({ 'data': item.data(), 'title': item.id })
-          // console.log(" taskArray ", taskArray);
-          // arr3 = taskArray;
-        })
-        // setTaskTitlesArray(titlesArray);
-      })
-    // console.log("TaskArray: ----> ", taskArray);
-    return taskArray;
-  }
-
   useEffect(() => {
-    // console.log('getCurr Company');
-    getCurrentCompany();
+    // console.log('companyReducer: ', companyReducer.company);
+    getCurrentCompany(companyReducer.companyName);
+    // console.log('Exists? ', abc)
   }, [isDrawerStatus === 'closed'])
 
-  return companyName ?
+  return companyData && companyReducer.company[0] ?
     <View style={[styles.container, CommonStyles.screenPadding]}>
       {/* <StatusBar barStyle={'dark-content'} backgroundColor={COLORS.white} /> */}
       <View style={styles.headerTitle}>
         <View style={styles.verticalBoldLine} />
         <View style={styles.sos}>
-          <Text style={styles.headerTitleTxt}>{companyName}</Text>
+          <Text style={styles.headerTitleTxt}>{companyData.companyName}</Text>
           <TouchableOpacity>
             <Image source={IconLinks.whatsapp} style={styles.whatsappIcon} />
           </TouchableOpacity>
@@ -156,7 +73,7 @@ export default CompanyDataScreen = ({ route, navigation }) => {
       <FlatList
         showsVerticalScrollIndicator={false}
         // style={{ backgroundColor: COLORS.blue }}
-        data={mainTitleArray}
+        data={companyReducer.company[0].dailyTaskData}
         renderItem={({ item, index }) => {
           // console.log("item:--- ", JSON.stringify(item));
           return (
@@ -164,13 +81,13 @@ export default CompanyDataScreen = ({ route, navigation }) => {
               <View style={styles.taskDateAndDayContainer}>
                 <Image style={styles.radioBTNbig} source={IconLinks.radioButtonUnselected} />
                 <View style={styles.dateAndDayContainer}>
-                  <Text style={styles.dateAndDayTxt}>{item.title}</Text>
+                  <Text style={styles.dateAndDayTxt}>{item.dailyTaskName}</Text>
                   <Text style={styles.dateAndDayTxt}>{daysOfWeek[dateObj.getDay(item.createdAt)]}</Text>
                 </View>
               </View>
               <FlatList
                 scrollEnabled={false}
-                data={item.data}
+                data={item.taskTitleData}
                 renderItem={({ item: note, index: noteIndex }) => {
                   // console.log("Note:--- ", JSON.stringify(note));
                   return (
@@ -178,17 +95,17 @@ export default CompanyDataScreen = ({ route, navigation }) => {
                       <View style={styles.verticalLightLine} />
                       <View style={{ marginLeft: RFPercentage(2.6), marginBottom: RFPercentage(1.5) }}>
                         <View>
-                          <Text style={{ fontSize: fontSizeChart._12px, color: COLORS.black, marginBottom: 7 }}>{note.title}, <Text style={{ color: COLORS.grey }}>01:50 PM</Text></Text>
+                          <Text style={{ fontSize: fontSizeChart._12px, color: COLORS.black, marginBottom: 7 }}>{note.taskTitleName}, <Text style={{ color: COLORS.grey }}>{new Date(note.createdOn).toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true })}</Text></Text>
                         </View>
                         <FlatList
                           scrollEnabled={false}
-                          data={note.data}
+                          data={note.tasksData}
                           renderItem={({ item: task, index: taskIndex }) => {
                             // console.log("Task: ", task);
                             return (
                               <View style={{ flexDirection: 'row', marginBottom: 7 }}>
-                                <Image source={IconLinks.radioButtonUnselected} style={styles.radioBTNsmall} />
-                                <Text style={{ fontSize: fontSizeChart._12px, color: COLORS.black }}>{task.data.taskName}</Text>
+                                <Image source={task.isPending ? IconLinks.radioButtonUnselected : IconLinks.radioButtonUnselected} style={styles.radioBTNsmall} />
+                                <Text style={{ fontSize: fontSizeChart._12px, color: COLORS.black }}>{task.tasksName}</Text>
                               </View>
                             )
                           }}

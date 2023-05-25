@@ -1,5 +1,5 @@
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import React from 'react'
+import React, { useEffect } from 'react'
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -20,9 +20,12 @@ const Tab = createBottomTabNavigator();
 const Drawer = createDrawerNavigator();
 const Stack = createNativeStackNavigator();
 
-const date = new Date();
+const dateObj = new Date();
+const currentTime = dateObj.getTime();
+const currentDate = dateObj.getDate() + '/' + (dateObj.getMonth() + 1) + '/' + dateObj.getFullYear();
 
 export const StackNavigator = () => {
+
   return (
     <Stack.Navigator
       // initialRouteName=''
@@ -36,7 +39,7 @@ export const StackNavigator = () => {
       <Stack.Screen name="addNote" component={AddNoteScreen}
         initialParams={{}}
         options={{
-          headerTitle: date.getDate() + '/' + date.getMonth() + '/' + date.getFullYear(),
+          headerTitle: currentDate,
           header: ({ navigation, route, options }) => {
             const title = getHeaderTitle(options, route.name);
 

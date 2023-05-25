@@ -6,108 +6,52 @@ import { RFPercentage, RFValue } from 'react-native-responsive-fontsize'
 import { IconLinks } from '../common/IconLinks'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import firestore from '@react-native-firebase/firestore';
+import { addCompanyData, addNewDailyTaskTitle, addNewTask, addNewTaskTitle } from '../redux/reducers/Reducer'
+import { useDispatch, useSelector } from 'react-redux'
 
 const dateObj = new Date();
-const currentTime = dateObj.getTime();
 const currentDate = dateObj.getDate() + ' ' + dateObj.toLocaleString('default', { month: 'short' }) + ', ' + dateObj.getFullYear();
 
 export default AddNoteScreen = ({ navigation }) => {
-  const [currCompany, setcurrCompany] = useState(null);
-  const [titleValue, settitleValue] = useState(null);
+  const companyReducer = useSelector((state) => state.companyReducer)
+  const dispatch = useDispatch();
+
+  const [currentCompany, setCurrentCompany] = useState(null);
+  const [titleValue, setTitleValue] = useState(null);
   const [addNewTaskTxt, setAddNewTaskTxt] = useState(null);
-  const [taskArray, setTaskArray] = useState([]);
+  const [focus, setFocus] = useState(false)
 
   const getCurrentCompany = async () => {
     try {
       const currentCompany = await AsyncStorage.getItem('@currentCompany');
-      // console.log("Get Storage Value NoteScreen: ", currentCompany);
-      setcurrCompany(currentCompany);
+      // console.log("Current Company: ", JSON.parse(currentCompany));
+      const objData = JSON.parse(currentCompany)
+      setCurrentCompany(objData);
+      // dispatch(addCompanyData(objData.companyName))
     } catch (e) {
-      // read error
       console.log('Error: ', e);
     }
   }
 
-  const checkIfCurrentDayExists = async () => {
-    await firestore().collection('Companies').doc(currCompany)
-      .collection('DailyTask').doc(currentDate)
-      .onSnapshot(snap => {
-        // console.log("DailyTask: ", snap._data);
-        if (snap.exists) {
-          // console.log("DailyTask Already Exists");
-          checkIfCurrentTaskExists();
-        }
-        else {
-          console.log("New DailyTask Created");
-          // console.log("DailyTask Path: ", snap.ref.path);
-          snap.ref.set({ 'title': currentDate, 'createdAt': currentTime })
-            .then(() => {
-              // console.log("Data Added successfully");
-              checkIfCurrentTaskExists();
-            })
-        }
-      })
-  }
-
-  const checkIfCurrentTaskExists = async () => {
-    await firestore().collection('Companies').doc(currCompany)
-      .collection('DailyTask').doc(currentDate)
-      .collection('Titles').doc(titleValue)
-      .onSnapshot(snap => {
-        // console.log("Title exists: ", snap.id);
-        if (snap.exists) {
-          // console.log("Title Already Exists");
-          checkIfCurrentSubTaskExists(taskArray);
-        }
-        else {
-          console.log("New Title Created");
-          // console.log("Title Path: ", snap.ref.path);
-          snap.ref.set({ 'title': titleValue, 'createdAt': currentTime })
-            .then(() => {
-              // console.log("Data Added successfully");
-              checkIfCurrentSubTaskExists(taskArray);
-            })
-        }
-      })
-  }
-
-  const checkIfCurrentSubTaskExists = async (value) => {
-    // console.log("TaskArray: ", value);
-    await value.map((item, index) => {
-      console.log("TaskArray: ", index);
-      firestore().collection('Companies').doc(currCompany)
-        .collection('DailyTask').doc(currentDate)
-        .collection('Titles').doc(titleValue)
-        .collection('Tasks').doc(item)
-        .onSnapshot(snap => {
-          console.log("Task exists: ", snap.exists);
-          if (snap.exists) {
-            console.log("Task Already Exists");
-          }
-          else {
-            console.log("New Task Created");
-            // console.log("Title Path: ", snap.ref.path);
-            snap.ref.set({ 'taskName': item, 'createdAt': currentTime, completeStatus: false })
-              .then(() => {
-                console.log("Data Added successfully");
-              })
-          }
-        })
-    })
+  const saveDataToCurrentCompany = async () => {
+    dispatch(addCompanyData(currentCompany.companyName))
     navigation.goBack();
   }
-
-  const appendArr = () => {
-    // console.log("ArrAppend: ", taskArray);
-    let dump = taskArray;
-    dump.push(addNewTaskTxt);
-    setTaskArray(dump);
-    setAddNewTaskTxt(null);
-    // console.log("Arr: ", dump);
+  const saveDailyTask = async () => {
+    dispatch(addNewDailyTaskTitle(currentDate));
+  }
+  const saveNewTaskTitle = async () => {
+    dispatch(addNewTaskTitle(titleValue));
+    setTitleValue(null);
+  }
+  const saveNewAddedTask = async () => {
+    dispatch(addNewTask(addNewTaskTxt));
+    setAddNewTaskTxt(null)
   }
 
   useEffect(() => {
     getCurrentCompany();
+
   }, [])
 
   return (
@@ -116,23 +60,24 @@ export default AddNoteScreen = ({ navigation }) => {
         placeholder='Add a title to this entry'
         style={styles.txtInputContainer}
         placeholderTextColor={COLORS.grey}
-        onChangeText={(txt) => settitleValue(txt)}
+        onChangeText={(txt) => setTitleValue(txt)}
+        autoFocus={true}
       />
       <Text style={styles.taskHeadingTxt}>Task</Text>
       <View style={styles.newTaskContainer}>
         {
-          taskArray.length === 0 ? null :
+          companyReducer.tasks.length === 0 ? null :
             <FlatList
-              data={taskArray}
+              data={companyReducer.tasks}
               showsVerticalScrollIndicator={false}
               renderItem={({ item, index }) => {
                 // console.log("Item: ", item);
                 return (
                   <View style={styles.addTaskRowContainer}>
-                    <TouchableOpacity style={styles.radioBtnContainer}>
+                    <TouchableOpacity style={styles.radioBtnContainer} onPress={() => { }}>
                       <Image source={IconLinks.radioButtonUnselected} style={styles.radioBtnIcon} />
                     </TouchableOpacity>
-                    <Text style={styles.taskTxt}>{item}</Text>
+                    <Text style={styles.taskTxt}>{item.tasksName}</Text>
                   </View>
 
                 )
@@ -146,21 +91,24 @@ export default AddNoteScreen = ({ navigation }) => {
           <TextInput
             style={styles.taskTxtInpt}
             value={addNewTaskTxt}
+            autoFocus={true}
             // placeholder='add'
             // placeholderTextColor={COLORS.grey}
             onChangeText={(txt) => setAddNewTaskTxt(txt)}
-            onBlur={() => { addNewTaskTxt === null ? console.log("Please enter some text") : appendArr() }}
+            onBlur={() =>
+              addNewTaskTxt === null ?
+                console.log("Empty")
+                : saveNewAddedTask()
+            }
           />
         </View>
       </View>
       <TouchableOpacity style={styles.saveBtn} onPress={() => {
-
-        taskArray !== [] && titleValue !== null ?
-          // checkIfTaskExists()
-          checkIfCurrentDayExists()
-          // console.log({ title: titleValue, tasks: taskArray, createdAt: currentTime })
-          : console.log("Please fill the details");
-
+        saveNewTaskTitle().then(() => {
+          saveDailyTask()
+        }).then(() => {
+          saveDataToCurrentCompany();
+        })
       }}>
         <Text style={styles.saveBtnTxt}>Save</Text>
       </TouchableOpacity>
