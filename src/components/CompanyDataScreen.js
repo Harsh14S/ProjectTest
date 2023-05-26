@@ -10,13 +10,9 @@ import { useIsFocused } from '@react-navigation/native'
 import CustomerLoader from '../common/CommonComponents/CustomerLoader';
 import { useDrawerStatus } from '@react-navigation/drawer';
 import { useDispatch, useSelector } from 'react-redux'
-import { addCompanyData } from '../redux/reducers/Reducer'
 
 const dateObj = new Date();
 const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thur', 'Fri', 'Sat'];
-
-let arr1 = [];
-let arr2 = [];
 
 export default CompanyDataScreen = ({ route, navigation }) => {
   const companyReducer = useSelector((state) => state.companyReducer)
@@ -26,25 +22,15 @@ export default CompanyDataScreen = ({ route, navigation }) => {
   const isDrawerStatus = useDrawerStatus();
   const [companyData, setcompanyData] = useState(null);
   const [currentCompanyData, setCurrentCompanyData] = useState(null);
-  const [mainTitleArray, setMainTitleArray] = useState([]);
-  const [dailyTaskTitleArray, setDailyTaskTitleArray] = useState([]);
-  const [dailySubTaskTitleArray, setDailySubTaskTitleArray] = useState([]);
-  const [snap2, setSnap2] = useState([])
 
   const getCurrentCompany = async () => {
     try {
       await AsyncStorage.getItem('@currentCompany')
         .then(snap => {
-          // console.log("Comany name: ", JSON.parse(snap));
-          const abc = JSON.parse(snap);
-          setcompanyData(abc);
-          const result = companyReducer.company.findIndex((cur) => cur.companyName === abc.companyName)
-          // console.log(result)
-          setCurrentCompanyData(result); // index
-          // dailyTaskFetchers(snap)
-          // console.log("Company Name Updated......");
-        }).then(() => {
-          // console.log(companyData)
+          // console.log("Company name: ", JSON.stringify(snap));
+          const parseToObj = JSON.parse(snap);
+          // console.log('companyData: ', companyData)
+          setcompanyData(parseToObj);
         })
     } catch (e) {
       console.log('Error: ', e)
@@ -52,12 +38,14 @@ export default CompanyDataScreen = ({ route, navigation }) => {
   }
 
   useEffect(() => {
-    // console.log('companyReducer: ', companyReducer.company);
     getCurrentCompany(companyReducer.companyName);
     // console.log('Exists? ', abc)
-  }, [isDrawerStatus === 'closed'])
+  }, [isDrawerStatus === 'closed' && isFocused])
+  useEffect(() => {
+    // console.log('companyReducer: ', companyReducer.companyArr[1]?.dailyTaskData[0]?.taskTitleData);
+  }, [])
 
-  return companyData && companyReducer.company[0] ?
+  return companyData ?
     <View style={[styles.container, CommonStyles.screenPadding]}>
       {/* <StatusBar barStyle={'dark-content'} backgroundColor={COLORS.white} /> */}
       <View style={styles.headerTitle}>
@@ -73,7 +61,8 @@ export default CompanyDataScreen = ({ route, navigation }) => {
       <FlatList
         showsVerticalScrollIndicator={false}
         // style={{ backgroundColor: COLORS.blue }}
-        data={companyReducer.company[0].dailyTaskData}
+        // data={companyReducer?.companyArr[1]?.dailyTaskData}
+        data={companyData.dailyTaskData}
         renderItem={({ item, index }) => {
           // console.log("item:--- ", JSON.stringify(item));
           return (
@@ -99,13 +88,13 @@ export default CompanyDataScreen = ({ route, navigation }) => {
                         </View>
                         <FlatList
                           scrollEnabled={false}
-                          data={note.tasksData}
+                          data={note.taskData}
                           renderItem={({ item: task, index: taskIndex }) => {
                             // console.log("Task: ", task);
                             return (
                               <View style={{ flexDirection: 'row', marginBottom: 7 }}>
                                 <Image source={task.isPending ? IconLinks.radioButtonUnselected : IconLinks.radioButtonUnselected} style={styles.radioBTNsmall} />
-                                <Text style={{ fontSize: fontSizeChart._12px, color: COLORS.black }}>{task.tasksName}</Text>
+                                <Text style={{ fontSize: fontSizeChart._12px, color: COLORS.black }}>{task.taskName}</Text>
                               </View>
                             )
                           }}
@@ -119,7 +108,7 @@ export default CompanyDataScreen = ({ route, navigation }) => {
           )
         }}
       />
-    </View> : <CustomerLoader indiColor={COLORS.blue} />
+    </View> : <CustomerLoader indiColor={COLORS.blue} viewStyle={{ backgroundColor: COLORS.white }} />
 }
 const styles = StyleSheet.create({
   container: {

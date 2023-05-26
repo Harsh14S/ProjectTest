@@ -9,7 +9,8 @@ import CustomerLoader from '../common/CommonComponents/CustomerLoader';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useDrawerStatus } from '@react-navigation/drawer';
 import { useSelector, useDispatch } from 'react-redux';
-import { createNewCompany, initialData } from '../redux/reducers/Reducer.js'
+import { createNewCompany, setCompanyDataFromAsync } from '../redux/reducers/Reducer'
+// import { createNewCompany, initialData } from '../redux/reducers/Reducer.js'
 
 
 const CustomDrawerContent = ({ navigation }) => {
@@ -18,14 +19,12 @@ const CustomDrawerContent = ({ navigation }) => {
 
   const isDrawerStatus = useDrawerStatus();
   const [addCompanyNew, setAddCompanyNew] = useState(false);
-  const [newCompanyName, setnewCompanyName] = useState(null);
-  const [companiesData, setcompaniesData] = useState([]);
-  const [isEmpty, setIsEmpty] = useState(false);
+  const [companyNameText, setcompanyNameText] = useState(null);
 
   const asynStorageClear = async () => {
     try {
-      // await AsyncStorage.clear();
-      await AsyncStorage.removeItem('@allCompanyData');
+      await AsyncStorage.clear();
+      // await AsyncStorage.removeItem('@allCompanyData');
       console.log('AsyncStorage Cleared......')
     } catch (e) {
       // clear error
@@ -33,7 +32,22 @@ const CustomDrawerContent = ({ navigation }) => {
     }
   }
 
+  const getAsyncStorageData = async () => {
+    try {
+      await AsyncStorage.getItem('@allCompanyData').then(snap => {
+        const objData = JSON.parse(snap);
+        dispatch(setCompanyDataFromAsync(objData));
+        // console.log("companyReducer Data: ", companyReducer.companyArr.length)
+      })
+    } catch (e) {
+      setAddCompanyNew(true);
+      // console.log('Error in getAsyncStorageData: ', e);
+      console.log('Add a company');
+    }
+  }
+
   const setCurrentScreen = async (value) => {
+    // console.log("setCurrentScreen Value", value);
     try {
       await AsyncStorage.setItem('@currentCompany', JSON.stringify(value))
         .then(() => {
@@ -43,49 +57,22 @@ const CustomDrawerContent = ({ navigation }) => {
       console.log('Error: ', e);
     }
   }
-  const getAsyncStorageData = async () => {
-    try {
-      await AsyncStorage.getItem('@allCompanyData').then(snap => {
-        const objData = JSON.parse(snap);
-        // console.log("State Data: ", objData);
-        // console.log('companyReducer: ', companyReducer.company)
-        if (companyReducer.company.length === 0) {
-          dispatch(initialData(objData));
-        }
-      })
-    } catch (e) {
-      setAddCompanyNew(true);
-      console.log('Error in getAsyncStorageData: ', e);
-    }
-  }
-
 
   const checkEmpty = () => {
-    if (newCompanyName === null || newCompanyName === '') {
+    if (companyNameText === null) {
       console.log("Please Enter Something");
     } else {
-      addNewCompany(newCompanyName);
-      setnewCompanyName(null);
+      // addNewCompany(companyNameText);
+      dispatch(createNewCompany(companyNameText));
+      setcompanyNameText(null);
+      setAddCompanyNew(false);
     }
   }
 
-  const addNewCompany = (compName) => {
-    dispatch(createNewCompany(compName))
-    setAddCompanyNew(false);
-  }
-
-  const getCompany = async () => {
-    setcompaniesData(companyReducer.company)
-  }
-
   useEffect(() => {
-    getCompany();
+    // getCompany();
     getAsyncStorageData();
   }, [])
-
-  useEffect(() => {
-    getCompany()
-  }, [getAsyncStorageData])
 
   return (
     <View style={styles.container}>
@@ -104,17 +91,16 @@ const CustomDrawerContent = ({ navigation }) => {
         {
           addCompanyNew ? <View style={styles.inputContainer}>
             <TextInput
-              value={newCompanyName}
+              value={companyNameText}
               placeholder='Enter company name'
               style={styles.textInput}
-              onChangeText={(txt) => setnewCompanyName(txt)}
+              onChangeText={(txt) => setcompanyNameText(txt)}
               autoCapitalize={'sentences'}
               maxLength={30}
               autoFocus={true}
             />
             <TouchableOpacity style={styles.saveBtn} onPress={() => {
               checkEmpty();
-              setAddCompanyNew(false);
             }}>
               <Text style={styles.saveText}>SAVE</Text>
             </TouchableOpacity>
@@ -122,9 +108,9 @@ const CustomDrawerContent = ({ navigation }) => {
           </View> : null
         }
         {
-          companiesData ?
+          companyReducer.companyArr.length !== 0 ?
             <FlatList
-              data={companiesData}
+              data={companyReducer.companyArr}
               renderItem={({ item, index }) => {
                 return (
                   <View>
@@ -144,14 +130,17 @@ const CustomDrawerContent = ({ navigation }) => {
                 )
               }}
               showsVerticalScrollIndicator={false}
-            /> : <CustomerLoader indiColor={COLORS.blue} />}
+            /> :
+            // <CustomerLoader indiColor={COLORS.blue} />
+            <View style={{ backgroundColor: COLORS.white, flex: 1, marginRight: RFPercentage(2.9), justifyContent: 'center', alignItems: 'center' }}><Text>Empty</Text></View>
+        }
         <View style={styles.bottomBtnsContainer}>
           <TouchableOpacity style={styles.addDataBtn} onPress={() => { setAddCompanyNew(true) }}>
             <Image style={styles.addDataIcon} source={IconLinks.plus} />
           </TouchableOpacity>
           <TouchableOpacity style={styles.allCompanyDataBtn} onPress={() => {
             // dispatch(createNewCompany('Abcd'))
-            // asynStorageClear();
+            asynStorageClear();
           }}>
             <Text style={styles.allCompanyDataText}>All Company Data</Text>
           </TouchableOpacity>

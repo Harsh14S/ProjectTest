@@ -6,11 +6,18 @@ import { RFPercentage, RFValue } from 'react-native-responsive-fontsize'
 import { IconLinks } from '../common/IconLinks'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import firestore from '@react-native-firebase/firestore';
-import { addCompanyData, addNewDailyTaskTitle, addNewTask, addNewTaskTitle } from '../redux/reducers/Reducer'
+// import { addCompanyData, addNewDailyTaskTitle, addNewTask, addNewTaskTitle } from '../redux/reducers/Reducer'
 import { useDispatch, useSelector } from 'react-redux'
+import { StackActions } from '@react-navigation/native'
+import { addDailyTask } from '../redux/reducers/Reducer'
+
+// const regEx = /^\s*$/;
+const regEx = /^(|\s*)$/; // detects empty string and only blank texts
 
 const dateObj = new Date();
 const currentDate = dateObj.getDate() + ' ' + dateObj.toLocaleString('default', { month: 'short' }) + ', ' + dateObj.getFullYear();
+const localDate = '23/5/2023';
+// const localDate = dateObj.toLocaleDateString();
 
 export default AddNoteScreen = ({ navigation }) => {
   const companyReducer = useSelector((state) => state.companyReducer)
@@ -19,7 +26,10 @@ export default AddNoteScreen = ({ navigation }) => {
   const [currentCompany, setCurrentCompany] = useState(null);
   const [titleValue, setTitleValue] = useState(null);
   const [addNewTaskTxt, setAddNewTaskTxt] = useState(null);
-  const [focus, setFocus] = useState(false)
+  const [addNewTask, setAddNewTask] = useState(false);
+  const [taskArr, setTaskArr] = useState([])
+  const [editTaskTxt, setEditTaskTxt] = useState(null);
+  const [editTaskIndex, setEditTaskIndex] = useState(null);
 
   const getCurrentCompany = async () => {
     try {
@@ -33,25 +43,44 @@ export default AddNoteScreen = ({ navigation }) => {
     }
   }
 
-  const saveDataToCurrentCompany = async () => {
-    dispatch(addCompanyData(currentCompany.companyName))
-    navigation.goBack();
+  const sendDataToRedux = (title, arr) => {
+    const obj = {
+      'companyName': currentCompany.companyName,
+      'dailyTaskName': localDate,
+      'taskTitleName': title,
+      'taskData': arr
+    }
+    dispatch(addDailyTask(obj))
+    navigation.dispatch(StackActions.replace('home'));
   }
-  const saveDailyTask = async () => {
-    dispatch(addNewDailyTaskTitle(currentDate));
+
+  const saveNewAddedTask = () => {
+    if (addNewTaskTxt === null) {
+      console.log("Empty")
+    } else {
+      setTaskArr([...taskArr, addNewTaskTxt])
+      // dispatch(addNewTask(addNewTaskTxt));
+      setAddNewTaskTxt(null)
+      setAddNewTask(false)
+    }
   }
-  const saveNewTaskTitle = async () => {
-    dispatch(addNewTaskTitle(titleValue));
-    setTitleValue(null);
+  function checkOnlyBlankSpaces(inputString) {
+    if (regEx.test(inputString)) {
+      console.log("Blank Spaces or empty")
+      return true;
+    } else {
+      // console.log("input ")
+      return false;
+    }
   }
-  const saveNewAddedTask = async () => {
-    dispatch(addNewTask(addNewTaskTxt));
-    setAddNewTaskTxt(null)
+  const saveEditedText = (txt, ind) => {
+    console.log("Text: ", taskArr[ind]);
+    taskArr[ind] = txt;
+    console.log('Task Array: ', taskArr)
   }
 
   useEffect(() => {
     getCurrentCompany();
-
   }, [])
 
   return (
@@ -65,51 +94,73 @@ export default AddNoteScreen = ({ navigation }) => {
       />
       <Text style={styles.taskHeadingTxt}>Task</Text>
       <View style={styles.newTaskContainer}>
-        {
-          companyReducer.tasks.length === 0 ? null :
-            <FlatList
-              data={companyReducer.tasks}
-              showsVerticalScrollIndicator={false}
-              renderItem={({ item, index }) => {
-                // console.log("Item: ", item);
-                return (
-                  <View style={styles.addTaskRowContainer}>
-                    <TouchableOpacity style={styles.radioBtnContainer} onPress={() => { }}>
-                      <Image source={IconLinks.radioButtonUnselected} style={styles.radioBtnIcon} />
-                    </TouchableOpacity>
-                    <Text style={styles.taskTxt}>{item.tasksName}</Text>
-                  </View>
 
-                )
-              }}
-            />}
+        {taskArr.length !== 0 ?
+          <FlatList
+            data={taskArr}
+            showsVerticalScrollIndicator={false}
+            renderItem={({ item, index }) => {
+              // console.log("Item: ", item);
+              return (
+                <View style={[styles.addTaskRowContainer, { borderWidth: editTaskIndex === index ? 1 : 0, borderColor: COLORS.grey }]}>
+                  <TouchableOpacity style={styles.radioBtnContainer} onPress={() => {
+                    setEditTaskIndex(index);
+                    setEditTaskTxt(item)
+                  }}>
+                    <Image source={IconLinks.radioButtonUnselected} style={styles.radioBtnIcon} />
+                  </TouchableOpacity>
+                  <TextInput
+                    style={[styles.taskTxtInpt]}
+                    editable={editTaskIndex === index ? true : false}
+                    value={editTaskIndex === index ? editTaskTxt : item}
+                    autoFocus={true}
+                    // placeholder='add'
+                    // placeholderTextColor={COLORS.grey}
+                    onChangeText={(txt) => setEditTaskTxt(txt)}
+                    onSubmitEditing={() => {
+                      console.log(checkOnlyBlankSpaces(editTaskTxt))
+                      if (!checkOnlyBlankSpaces(editTaskTxt)) {
+                        saveEditedText(editTaskTxt, index)
+                        setEditTaskIndex(null)
+                        setEditTaskTxt(null)
+                      } else {
+                        console.log("Only Blank Spaces are not allowed")
+                      }
+                    }}
+                  />
+                </View>
+
+              )
+            }}
+          /> : null}
         <View style={styles.addTaskRowContainer}>
-          <TouchableOpacity style={styles.radioBtnContainer}>
+          <TouchableOpacity style={styles.radioBtnContainer}
+            // disabled={editTaskIndex !== null ? false : true}
+            disabled={editTaskIndex === null ? false : true}
+            onPress={() => setAddNewTask(true)}>
             <Image source={IconLinks.radioButtonUnselected} style={styles.radioBtnIcon} />
           </TouchableOpacity>
           {/* <Text style={styles.taskTxt}>Add</Text> */}
-          <TextInput
-            style={styles.taskTxtInpt}
-            value={addNewTaskTxt}
-            autoFocus={true}
-            // placeholder='add'
-            // placeholderTextColor={COLORS.grey}
-            onChangeText={(txt) => setAddNewTaskTxt(txt)}
-            onBlur={() =>
-              addNewTaskTxt === null ?
-                console.log("Empty")
-                : saveNewAddedTask()
-            }
-          />
+          {addNewTask ?
+            <TextInput
+              style={styles.taskTxtInpt}
+              value={addNewTaskTxt}
+              autoFocus={true}
+              editable={editTaskIndex !== null ? false : true}
+              // placeholder='add'
+              // placeholderTextColor={COLORS.grey}
+              onChangeText={(txt) => setAddNewTaskTxt(txt)}
+              onSubmitEditing={() => saveNewAddedTask()}
+            /> : null}
         </View>
       </View>
-      <TouchableOpacity style={styles.saveBtn} onPress={() => {
-        saveNewTaskTitle().then(() => {
-          saveDailyTask()
-        }).then(() => {
-          saveDataToCurrentCompany();
-        })
-      }}>
+      <TouchableOpacity
+        disabled={checkOnlyBlankSpaces(titleValue) || taskArr.length === 0 ? true : false}
+        style={styles.saveBtn}
+        onPress={() => {
+          sendDataToRedux(titleValue, taskArr);
+          // console.log(typeof(localDate))
+        }}>
         <Text style={styles.saveBtnTxt}>Save</Text>
       </TouchableOpacity>
     </View>
@@ -146,7 +197,7 @@ const styles = StyleSheet.create({
     width: '100%',
     alignItems: 'center',
     // backgroundColor: COLORS.orange,
-    marginBottom: RFPercentage(1.2)
+    marginBottom: RFPercentage(0.5)
   },
   radioBtnContainer: {
     marginRight: RFPercentage(0.8),  // 6px
@@ -157,13 +208,7 @@ const styles = StyleSheet.create({
     width: RFPercentage(3),  // 24px
     tintColor: COLORS.grey,
   },
-  taskTxt: {
-    flex: 1,
-    color: COLORS.black,
-    fontSize: fontSizeChart._12px,
-    fontFamily: 'Montserrat-regular',
-    // backgroundColor: COLORS.green,
-  },
+
   taskTxtInpt: {
     flex: 1,
     // height: 30,
@@ -171,7 +216,8 @@ const styles = StyleSheet.create({
     fontSize: fontSizeChart._12px,
     fontFamily: 'Montserrat-regular',
     // backgroundColor: COLORS.green,
-    paddingVertical: Platform.OS === 'ios' ? RFPercentage(0.5) : 0,
+    paddingVertical: Platform.OS === 'ios' ? RFPercentage(0.5) : 0.1,
+    // marginTop: RFPercentage(0.1)
   },
   saveBtn: {
     width: '100%',

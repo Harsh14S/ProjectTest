@@ -20,153 +20,142 @@ const storeDataToAsync = async (value) => {
 const userSlice = createSlice({
     name: "company",
     initialState: {
-        company: [],
+        arr: ['sda', 'gdg', 'hyfrh'],
+        companyArr: [],
         companyData: {
             'companyName': '',
-            'dailyTaskData': '',
+            'dailyTaskData': [],
             'createdOn': '',
             'isPending': true,
         },
-        dailyTask: [],
         dailyTaskData: {
             'dailyTaskName': '',
-            'taskTitleData': '',
+            'taskTitleData': [],
             'createdOn': '',
             'isPending': true,
         },
-        taskTitle: [],
         taskTitleData: {
             'taskTitleName': '',
-            'tasksData': '',
+            'taskData': [],
             'createdOn': '',
             'isPending': true,
         },
-        tasks: [],
-        tasksData: {
-            'tasksName': '',
+        taskObj: {
+            'taskName': '',
             'isPending': true,
         },
 
     },
     reducers: {
-        initialData: (state, action) => {
-            // if (state.company === []) {
-            // console.log("Payload Items: ", state.company)
-            action.payload.map(item => {
-                // console.log("Payload Items: ", item)
-                state.company = [...state.company, item]
-            })
-            // }
-        },
-        createNewCompany: (state, action) => {
-            function companyExists(companyName) {
-                return state.company.some(function (rec) {
-                    return rec.companyName === companyName;
-                });
-            }
-
-            if (companyExists(action.payload)) {
-                console.log("Alredy Exists......")
+        setCompanyDataFromAsync: (state, action) => {
+            if (state.companyArr.length === 0) {
+                if (action.payload !== undefined) {
+                    action.payload?.map(items => {
+                        state.companyArr = [...state.companyArr, items];
+                    })
+                }
             } else {
-                state.companyData = {
+                console.log("setCompanyDataFromAsync is called inside else")
+            }
+        },
+
+        createNewCompany: (state, action) => {
+            function doesCompanyExists() {
+                const index = state.companyArr.findIndex(ind => ind.companyName === action.payload)
+                return index;
+            }
+            // console.log("Store Data: ", state.companyArr);
+            const data = doesCompanyExists();
+            if (data === -1) {
+                const companyDataBin = {
                     ...state.companyData,
                     'companyName': action.payload,
-                    'taskCreatedOn': new Date().getTime(),
-                    // 'isCompleted': false,
+                    'createdOn': dateObj.getTime(),
                 }
-                // console.log("Company Data: ", state.companyData);
-                state.company = [...state.company, state.companyData];
-            }
-            storeDataToAsync(state.company);
-            // console.log("Create Company Reducer state: ", state.company);
-        },
-        addCompanyData: (state, action) => {
-            // state.company.filter(action.payload === )
-
-            function companyExists(companyName) {
-                const result = state.company.findIndex((cur) => cur.companyName === companyName)
-                // console.log("Result: ", result);
-                return result;
-            }
-            // console.log(companyExists(action.payload))
-            state.company[companyExists(action.payload)] = {
-                ...state.companyData,
-                'companyName': action.payload,
-                'dailyTaskData': state.dailyTask,
-            }
-            // if (companyExists(action.payload)) {
-
-            // }
-            // state.companyData = {
-            //     ...state.companyData,
-            //     'companyName': action.payload,
-            //     'dailyTaskData': state.dailyTask,
-            // }
-            // state.company = [...state.company, state.companyData];
-            storeDataToAsync(state.company);
-        },
-
-        addNewDailyTaskTitle: (state, action) => {
-            function dailyTaskExists(dailyTaskName) {
-                return state.dailyTask.some(function (rec) {
-                    return rec.dailyTaskName === dailyTaskName;
-                });
-            }
-            if (dailyTaskExists(action.payload)) {
-                console.log("daily Task Alredy Exists......")
+                state.companyArr = [...state.companyArr, companyDataBin]
+                // console.log("createNewCompany company state: ", state.companyArr);
+                storeDataToAsync(state.companyArr)
             } else {
-                state.dailyTaskData = {
+                console.log("Company already exists.....");
+            }
+        },
+
+        addDailyTask: (state, action) => {
+            const currentCompanyIndex = state.companyArr.findIndex(ind => ind.companyName === action.payload.companyName);
+            const currentCompanyData = state.companyArr[currentCompanyIndex];
+            // console.log("Current Company Data before: ", currentCompanyData);
+
+            const currentDailyIndex = currentCompanyData.dailyTaskData.findIndex(ind => ind.dailyTaskName === action.payload.dailyTaskName);
+            console.log("Current Daily Index: ", currentDailyIndex);
+            // const checkDailyTaskExists = currentCompanyData
+            const dailyTaskData = createDailyTaskTitleObj();
+            if (currentDailyIndex === -1) {
+                currentCompanyData.dailyTaskData = [...currentCompanyData.dailyTaskData, createDailyTaskTitleObj()];
+            } else {
+                console.log('first else')
+                const taskTitleArr = currentCompanyData.dailyTaskData[currentDailyIndex].taskTitleData;
+                // console.log('Task Title Array: ', taskTitleArr)
+                const dailyTaskObj = {
                     ...state.dailyTaskData,
-                    'dailyTaskName': action.payload,
-                    'taskTitleData': state.taskTitle,
-                    'createdOn': new Date().getTime(),
-
+                    'dailyTaskName': action.payload.dailyTaskName,
+                    'taskTitleData': [createTaskTitleObj()],
+                    'createdOn': dateObj.getTime(),
                 }
-                state.dailyTask = [...state.dailyTask, state.dailyTaskData];
+                // console.log('Daily Task Obj: ', dailyTaskObj)
+                // return dailyTaskObj;
+                currentCompanyData.dailyTaskData = [...currentCompanyData.dailyTaskData, dailyTaskObj];
             }
-            console.log("Daily Tasks Reducer state: ", state.dailyTask);
-        },
-
-        addNewTaskTitle: (state, action) => {
-            function taskTitleExists(taskTitleName) {
-                return state.taskTitle.some(function (rec) {
-                    return rec.taskTitleName === taskTitleName;
-                });
+            // console.log("Current Company Data After: ", currentCompanyData);
+            function createDailyTaskTitleObj() {
+                if (currentDailyIndex === -1) {
+                    // const taskTitleArr = currentCompanyData.dailyTaskData[currentDailyIndex].taskTitleData;
+                    const taskTitleArr = [];
+                    // console.log('Task Title Array: ', currentCompanyData)
+                    const dailyTaskObj = {
+                        ...state.dailyTaskData,
+                        'dailyTaskName': action.payload.dailyTaskName,
+                        'taskTitleData': [...taskTitleArr, createTaskTitleObj()],
+                        'createdOn': dateObj.getTime(),
+                    }
+                    return dailyTaskObj;
+                } else {
+                    const taskTitleArr = currentCompanyData.dailyTaskData[currentDailyIndex].taskTitleData;
+                    // console.log('Task Title Array: ', taskTitleArr)
+                    const dailyTaskObj = {
+                        ...state.dailyTaskData,
+                        'dailyTaskName': action.payload.dailyTaskName,
+                        'taskTitleData': [...taskTitleArr, createTaskTitleObj()],
+                        'createdOn': dateObj.getTime(),
+                    }
+                    // console.log('Daily Task Obj: ', dailyTaskObj)
+                    return dailyTaskObj;
+                }
             }
-            if (taskTitleExists(action.payload)) {
-                console.log("Task Alredy Exists......")
-            } else {
-                state.taskTitleData = {
+            function createTaskTitleObj() {
+                const taskObjArr = []
+                action.payload.taskData.map((item, index) => {
+                    const taskObj = {
+                        'taskName': item,
+                        'isPending': true,
+                    }
+                    taskObjArr.push(taskObj)
+                })
+                const taskTitleObj = {
                     ...state.taskTitleData,
-                    'taskTitleName': action.payload,
-                    'tasksData': state.tasks,
-                    'createdOn': new Date().getTime(),
+                    'taskTitleName': action.payload.taskTitleName,
+                    'taskData': taskObjArr,
+                    'createdOn': dateObj.getTime(),
                 }
-                state.taskTitle = [...state.taskTitle, state.taskTitleData];
+                return taskTitleObj
             }
-            console.log("Task Title Reducer state: ", JSON.stringify(state.taskTitle));
-        },
-
-        addNewTask: (state, action) => {
-            function taskExists(tasksName) {
-                return state.tasks.some(function (rec) {
-                    return rec.tasksName === tasksName;
-                });
-            }
-            if (taskExists(action.payload)) {
-                console.log("Task Alredy Exists......")
-            } else {
-                state.tasksData = {
-                    ...state.tasksData,
-                    'tasksName': action.payload,
-                }
-                state.tasks = [...state.tasks, state.tasksData];
-            }
-        },
+            storeDataToAsync(state.companyArr);
+        }
     },
 })
 
-export const { initialData, createNewCompany, addCompanyData, addNewDailyTaskTitle, addNewTaskTitle, addNewTask } = userSlice.actions
+export const {
+    createNewCompany, setCompanyDataFromAsync, addDailyTask
+} = userSlice.actions
 export default userSlice.reducer
 
 

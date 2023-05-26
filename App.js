@@ -10,25 +10,7 @@ import { Provider } from 'react-redux';
 
 export default App = () => {
   // const asynStorageClear = async () => {
-  //   try {
-  //     await AsyncStorage.clear();
-  //     console.log('AsyncStorage Cleared......')
-  //   } catch (e) {
-  //     // clear error
-  //     console.log('Error: ', e);
-  //   }
-  // }
-  // const getAsyncStorageData = async () => {
-  //   try {
-  //     await AsyncStorage.getItem('@allCompanyData').then(snap => {
-  //       const objData = JSON.parse(snap);
-  //       console.log("State Data: ", objData);
-  //       // return objData
-  //     })
-  //   } catch (error) {
-  //     console.log('Error in getAsyncStorageData: ', e);
-  //   }
-  // }
+
   useEffect(() => {
     // asynStorageClear();
     // getAsyncStorageData();
