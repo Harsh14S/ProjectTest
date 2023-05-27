@@ -71,6 +71,7 @@ const CustomDrawerContent = ({ navigation }) => {
 
   useEffect(() => {
     // getCompany();
+    navigation.openDrawer()
     getAsyncStorageData();
   }, [])
 
@@ -78,7 +79,10 @@ const CustomDrawerContent = ({ navigation }) => {
     <View style={styles.container}>
       <StatusBar barStyle={isDrawerStatus === 'open' ? 'light-content' : 'dark-content'} backgroundColor={isDrawerStatus === 'open' ? COLORS.blue : COLORS.white} translucent />
       <View style={styles.upperContainer}>
-        <TouchableOpacity style={styles.backButton} onPress={() => navigation.closeDrawer()}>
+        <TouchableOpacity
+          style={styles.backButton}
+          disabled={companyReducer.companyArr.length === 0 ? true : false}
+          onPress={() => navigation.closeDrawer()}>
           <Image source={IconLinks.leftAngle} style={styles.backButtonIcon} />
           <Text style={styles.backButtonText}>Back</Text>
         </TouchableOpacity>

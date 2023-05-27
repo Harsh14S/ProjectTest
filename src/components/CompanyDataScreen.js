@@ -10,6 +10,7 @@ import { useIsFocused } from '@react-navigation/native'
 import CustomerLoader from '../common/CommonComponents/CustomerLoader';
 import { useDrawerStatus } from '@react-navigation/drawer';
 import { useDispatch, useSelector } from 'react-redux'
+import { updatePendingStatus } from '../redux/reducers/Reducer'
 
 const dateObj = new Date();
 const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thur', 'Fri', 'Sat'];
@@ -37,13 +38,22 @@ export default CompanyDataScreen = ({ route, navigation }) => {
     }
   }
 
+  function updateTaskStatus(task, taskTit, dailyTaskTit, company) {
+    const objData = {
+      'companyName': company,
+      'dailyTaskName': dailyTaskTit,
+      'taskTitleName': taskTit,
+      'taskName': task
+    }
+    dispatch(updatePendingStatus(objData))
+  }
+  // useEffect(() => {
+  //   // console.log('updateTaskStatus is awokened')
+  //   getCurrentCompany();
+  // }, [updateTaskStatus])
   useEffect(() => {
-    getCurrentCompany(companyReducer.companyName);
-    // console.log('Exists? ', abc)
+    getCurrentCompany();
   }, [isDrawerStatus === 'closed' && isFocused])
-  useEffect(() => {
-    // console.log('companyReducer: ', companyReducer.companyArr[1]?.dailyTaskData[0]?.taskTitleData);
-  }, [])
 
   return companyData ?
     <View style={[styles.container, CommonStyles.screenPadding]}>
@@ -64,11 +74,11 @@ export default CompanyDataScreen = ({ route, navigation }) => {
         // data={companyReducer?.companyArr[1]?.dailyTaskData}
         data={companyData.dailyTaskData}
         renderItem={({ item, index }) => {
-          // console.log("item:--- ", JSON.stringify(item));
+          // console.log("item:--- ", item);
           return (
             <View style={styles.tasksMainContainer} key={index}>
               <View style={styles.taskDateAndDayContainer}>
-                <Image style={styles.radioBTNbig} source={IconLinks.radioButtonUnselected} />
+                <Image style={styles.radioBTNbig} source={item.isPending ? IconLinks.radioButtonUnselected : IconLinks.radioButtonSelected} />
                 <View style={styles.dateAndDayContainer}>
                   <Text style={styles.dateAndDayTxt}>{item.dailyTaskName}</Text>
                   <Text style={styles.dateAndDayTxt}>{daysOfWeek[dateObj.getDay(item.createdAt)]}</Text>
@@ -93,8 +103,16 @@ export default CompanyDataScreen = ({ route, navigation }) => {
                             // console.log("Task: ", task);
                             return (
                               <View style={{ flexDirection: 'row', marginBottom: 7 }}>
-                                <Image source={task.isPending ? IconLinks.radioButtonUnselected : IconLinks.radioButtonUnselected} style={styles.radioBTNsmall} />
-                                <Text style={{ fontSize: fontSizeChart._12px, color: COLORS.black }}>{task.taskName}</Text>
+                                <TouchableOpacity
+                                  style={styles.radioBTNContainer}
+                                  onPress={() => {
+                                    updateTaskStatus(task.taskName, note.taskTitleName, item.dailyTaskName, companyData.companyName)
+                                  }}
+                                >
+                                  <Image source={task.isPending ? IconLinks.radioButtonUnselected : IconLinks.radioButtonSelected} style={styles.radioBTNsmall} />
+
+                                </TouchableOpacity>
+                                <Text style={[styles.taskNameTxt, { textDecorationLine: task.isPending ? 'none' : 'line-through' }]}>{task.taskName}</Text>
                               </View>
                             )
                           }}
@@ -166,11 +184,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: 12,
   },
+  radioBTNContainer: {
+    // backgroundColor: COLORS.grey,
+    marginRight: RFPercentage(1),  // 8px
+  },
   radioBTNsmall: {
     height: RFPercentage(2.5),
     width: RFPercentage(2.5),
     tintColor: COLORS.grey,
-    marginRight: RFPercentage(1),  // 8px
   },
   radioBTNbig: {
     height: RFPercentage(3.4),
@@ -192,4 +213,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginLeft: RFPercentage(1.6),
   },
+  taskNameTxt: {
+    fontSize: fontSizeChart._12px,
+    color: COLORS.black
+  }
 })

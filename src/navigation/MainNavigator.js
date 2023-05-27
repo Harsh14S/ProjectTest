@@ -57,7 +57,7 @@ export const DrawerNavigator = ({ navigation, route }) => {
   // console.log('DrawerNavigator Routes: ', route);
   return (
     <Drawer.Navigator
-      defaultStatus='open'
+      // defaultStatus='open'
       drawerContent={(props) => <CustomDrawerContent {...props} />}
       screenOptions={{
         swipeEnabled: false,
