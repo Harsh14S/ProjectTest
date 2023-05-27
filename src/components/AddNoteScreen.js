@@ -16,7 +16,7 @@ const regEx = /^(|\s*)$/; // detects empty string and only blank texts
 
 const dateObj = new Date();
 const currentDate = dateObj.getDate() + ' ' + dateObj.toLocaleString('default', { month: 'short' }) + ', ' + dateObj.getFullYear();
-const localDate = '23/5/2023';
+const localDate = '25/5/2023';
 // const localDate = dateObj.toLocaleDateString();
 
 export default AddNoteScreen = ({ navigation }) => {

@@ -9,7 +9,7 @@ const storeDataToAsync = async (value) => {
     try {
         await AsyncStorage.setItem('@allCompanyData', JSON.stringify(value))
             .then(() => {
-                console.log("currentCompany is successfully set ");
+                // console.log("currentCompany is successfully set ");
             })
     } catch (e) {
         // saving error
@@ -55,7 +55,7 @@ const userSlice = createSlice({
                     })
                 }
             } else {
-                console.log("setCompanyDataFromAsync is called inside else")
+                // console.log("setCompanyDataFromAsync is called inside else")
             }
         },
 
@@ -81,74 +81,98 @@ const userSlice = createSlice({
         },
 
         addDailyTask: (state, action) => {
+            console.log("Action Payload Data: ", action.payload);
             const currentCompanyIndex = state.companyArr.findIndex(ind => ind.companyName === action.payload.companyName);
             const currentCompanyData = state.companyArr[currentCompanyIndex];
-            // console.log("Current Company Data before: ", currentCompanyData);
+            console.log("Current Company Data before: ", currentCompanyData);
 
             const currentDailyIndex = currentCompanyData.dailyTaskData.findIndex(ind => ind.dailyTaskName === action.payload.dailyTaskName);
+            const currentDailyData = currentCompanyData.dailyTaskData.find(ind => ind.dailyTaskName === action.payload.dailyTaskName);
             console.log("Current Daily Index: ", currentDailyIndex);
-            // const checkDailyTaskExists = currentCompanyData
-            const dailyTaskData = createDailyTaskTitleObj();
-            if (currentDailyIndex === -1) {
-                currentCompanyData.dailyTaskData = [...currentCompanyData.dailyTaskData, createDailyTaskTitleObj()];
-            } else {
-                console.log('first else')
-                const taskTitleArr = currentCompanyData.dailyTaskData[currentDailyIndex].taskTitleData;
-                // console.log('Task Title Array: ', taskTitleArr)
+            console.log("Current Daily Data: ", currentDailyData);
+
+            if (currentDailyData === undefined) {
+                const taskTitleArr = [];
+                // console.log('Task Title Array: ', currentCompanyData)
                 const dailyTaskObj = {
                     ...state.dailyTaskData,
                     'dailyTaskName': action.payload.dailyTaskName,
-                    'taskTitleData': [createTaskTitleObj()],
+                    'taskTitleData': [...taskTitleArr, createTaskTitleObj()],
                     'createdOn': dateObj.getTime(),
                 }
-                // console.log('Daily Task Obj: ', dailyTaskObj)
-                // return dailyTaskObj;
                 currentCompanyData.dailyTaskData = [...currentCompanyData.dailyTaskData, dailyTaskObj];
+            } else {
+
             }
-            // console.log("Current Company Data After: ", currentCompanyData);
-            function createDailyTaskTitleObj() {
-                if (currentDailyIndex === -1) {
-                    // const taskTitleArr = currentCompanyData.dailyTaskData[currentDailyIndex].taskTitleData;
-                    const taskTitleArr = [];
-                    // console.log('Task Title Array: ', currentCompanyData)
-                    const dailyTaskObj = {
-                        ...state.dailyTaskData,
-                        'dailyTaskName': action.payload.dailyTaskName,
-                        'taskTitleData': [...taskTitleArr, createTaskTitleObj()],
-                        'createdOn': dateObj.getTime(),
-                    }
-                    return dailyTaskObj;
-                } else {
-                    const taskTitleArr = currentCompanyData.dailyTaskData[currentDailyIndex].taskTitleData;
-                    // console.log('Task Title Array: ', taskTitleArr)
-                    const dailyTaskObj = {
-                        ...state.dailyTaskData,
-                        'dailyTaskName': action.payload.dailyTaskName,
-                        'taskTitleData': [...taskTitleArr, createTaskTitleObj()],
-                        'createdOn': dateObj.getTime(),
-                    }
-                    // console.log('Daily Task Obj: ', dailyTaskObj)
-                    return dailyTaskObj;
-                }
-            }
-            function createTaskTitleObj() {
-                const taskObjArr = []
-                action.payload.taskData.map((item, index) => {
-                    const taskObj = {
-                        'taskName': item,
-                        'isPending': true,
-                    }
-                    taskObjArr.push(taskObj)
-                })
-                const taskTitleObj = {
-                    ...state.taskTitleData,
-                    'taskTitleName': action.payload.taskTitleName,
-                    'taskData': taskObjArr,
-                    'createdOn': dateObj.getTime(),
-                }
-                return taskTitleObj
-            }
-            storeDataToAsync(state.companyArr);
+            console.log("Current Company Data before: ", currentCompanyData);
+
+
+            // const checkDailyTaskExists = currentCompanyData
+            // const dailyTaskData = createDailyTaskTitleObj();
+            // if (currentDailyIndex === -1) {
+            //     console.log('first if')
+            //     currentCompanyData.dailyTaskData = [...currentCompanyData.dailyTaskData, dailyTaskData];
+            // } else {
+            //     console.log('first else')
+            //     const taskTitleArr = currentCompanyData.dailyTaskData[currentDailyIndex].taskTitleData;
+            //     // console.log('Task Title Array: ', taskTitleArr)
+            //     const dailyTaskObj = {
+            //         ...state.dailyTaskData,
+            //         'dailyTaskName': action.payload.dailyTaskName,
+            //         'taskTitleData': [dailyTaskData],
+            //         'createdOn': dateObj.getTime(),
+            //     }
+            //     // console.log('Daily Task Obj: ', dailyTaskObj)
+            //     // return dailyTaskObj;
+            //     currentCompanyData.dailyTaskData = [...currentCompanyData.dailyTaskData, dailyTaskObj];
+            // }
+            // // console.log("Current Company Data After: ", currentCompanyData);
+            // function createDailyTaskTitleObj() {
+            //     if (currentDailyIndex === -1) {
+            //         console.log('second if')
+            //         // const taskTitleArr = currentCompanyData.dailyTaskData[currentDailyIndex].taskTitleData;
+            //         const taskTitleArr = [];
+            //         // console.log('Task Title Array: ', currentCompanyData)
+            //         const dailyTaskObj = {
+            //             ...state.dailyTaskData,
+            //             'dailyTaskName': action.payload.dailyTaskName,
+            //             'taskTitleData': [...taskTitleArr, createTaskTitleObj()],
+            //             'createdOn': dateObj.getTime(),
+            //         }
+            //         return dailyTaskObj;
+            //     } else {
+            //         console.log('second else')
+            //         const taskTitleArr = currentCompanyData.dailyTaskData[currentDailyIndex].taskTitleData;
+            //         // console.log('Task Title Array: ', taskTitleArr)
+            //         const dailyTaskObj = {
+            //             ...state.dailyTaskData,
+            //             'dailyTaskName': action.payload.dailyTaskName,
+            //             'taskTitleData': [...taskTitleArr, createTaskTitleObj()],
+            //             'createdOn': dateObj.getTime(),
+            //         }
+            //         // console.log('Daily Task Obj: ', dailyTaskObj)
+            //         return dailyTaskObj;
+            //     }
+            // }
+            // function createTaskTitleObj() {
+            //     const taskObjArr = []
+            //     action.payload.taskData.map((item, index) => {
+            //         const taskObj = {
+            //             'taskName': item,
+            //             'isPending': true,
+            //         }
+            //         taskObjArr.push(taskObj)
+            //     })
+            //     const taskTitleObj = {
+            //         ...state.taskTitleData,
+            //         'taskTitleName': action.payload.taskTitleName,
+            //         'taskData': taskObjArr,
+            //         'createdOn': dateObj.getTime(),
+            //     }
+            //     return taskTitleObj
+            // }
+            console.log("Current Company Data before: ", currentCompanyData);
+            // storeDataToAsync(state.companyArr);
         }
     },
 })
