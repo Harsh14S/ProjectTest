@@ -16,8 +16,8 @@ const regEx = /^(|\s*)$/; // detects empty string and only blank texts
 
 const dateObj = new Date();
 const currentDate = dateObj.getDate() + ' ' + dateObj.toLocaleString('default', { month: 'short' }) + ', ' + dateObj.getFullYear();
-const localDate = '11/5/2023';
-// const localDate = dateObj.toLocaleDateString();
+// const localDate = '11/5/2023';
+const localDate = dateObj.toLocaleDateString();
 
 export default AddNoteScreen = ({ navigation }) => {
   const companyReducer = useSelector((state) => state.companyReducer)
@@ -52,6 +52,7 @@ export default AddNoteScreen = ({ navigation }) => {
     }
     dispatch(addDailyTask(obj))
     navigation.dispatch(StackActions.replace('home'));
+    // navigation.closeDrawer()
   }
 
   const saveNewAddedTask = () => {

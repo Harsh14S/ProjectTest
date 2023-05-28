@@ -141,7 +141,7 @@ const userSlice = createSlice({
 
             const taskNameData = dailyTaskData.taskTitleData.find(crr => crr.taskTitleName === action.payload.taskTitleName);
             const taskNameIndex = dailyTaskData.taskTitleData.findIndex(crr => crr.taskTitleName === action.payload.taskTitleName);
-            console.log('Current Task Title Index ', taskNameIndex, ' & Data : ', taskNameData);
+            // console.log('Current Task Title Index ', taskNameIndex, ' & Data : ', taskNameData);
 
             const taskData = taskNameData.taskData.find(crr => crr.taskName === action.payload.taskName);
             const taskIndex = taskNameData.taskData.findIndex(crr => crr.taskName === action.payload.taskName);
@@ -156,21 +156,23 @@ const userSlice = createSlice({
             // console.log('Return Obj: ', currentCompanyData.dailyTaskData[dailyTaskIndex].taskTitleData[taskNameIndex].taskData[taskIndex]);
 
             const taskNameDataAllStat = taskNameData.taskData.every(crr => crr.isPending === false);
-            console.log('taskNameDataAllStat: ', taskNameDataAllStat);
-            // if (taskNameDataAllStat) {
-            //     const taskNameObj = {
-            //         ...taskNameData,
-            //         'isPending': !(taskNameData.isPending)
-            //     }
-            //     currentCompanyData.dailyTaskData[dailyTaskIndex].taskTitleData[taskNameIndex] = taskNameObj;
-            // } else {
-            //     const taskNameObj = {
-            //         ...taskNameData,
-            //         'isPending': !(taskNameData.isPending)
-            //     }
-            //     currentCompanyData.dailyTaskData[dailyTaskIndex].taskTitleData[taskNameIndex] = taskNameObj;
-            // }
-            console.log('Current Task Title Index ', taskNameIndex, ' & Data : ', taskNameData);
+            // console.log('taskNameDataAllStat: ', taskNameDataAllStat);
+            if (taskNameDataAllStat) {
+                // console.log('taskNameDataAllStat is Set to false')
+                const taskNameObj = {
+                    ...taskNameData,
+                    'isPending': false
+                }
+                currentCompanyData.dailyTaskData[dailyTaskIndex].taskTitleData[taskNameIndex] = taskNameObj;
+            } else {
+                // console.log('taskNameDataAllStat is Set to true')
+                const taskNameObj = {
+                    ...taskNameData,
+                    'isPending': true
+                }
+                currentCompanyData.dailyTaskData[dailyTaskIndex].taskTitleData[taskNameIndex] = taskNameObj;
+            }
+            // console.log('Current Task Title Index ', taskNameIndex, ' & Data : ', taskNameData);
 
             const dailyTaskDataAllStat = dailyTaskData.taskTitleData.every(crr => {
                 // console.log("Crr ", crr);
@@ -179,21 +181,23 @@ const userSlice = createSlice({
             );
             // console.log('Current Daily Task Index ', dailyTaskIndex, ' & Data : ', dailyTaskData);
             // console.log('dailyTaskDataAllStat: ', dailyTaskDataAllStat)
-            // if (dailyTaskDataAllStat) {
-            //     const dailyTaskObj = {
-            //         ...dailyTaskData,
-            //         'isPending': !(dailyTaskData.isPending)
-            //     }
-            //     currentCompanyData.dailyTaskData[dailyTaskIndex] = dailyTaskObj;
-            //     // console.log(currentCompanyData.dailyTaskData[dailyTaskIndex])
-            // } else {
-            //     const dailyTaskObj = {
-            //         ...dailyTaskData,
-            //         'isPending': !(dailyTaskData.isPending)
-            //     }
-            //     currentCompanyData.dailyTaskData[dailyTaskIndex] = dailyTaskObj;
-            // }
-
+            if (dailyTaskDataAllStat) {
+                // console.log('dailyTaskDataAllStat is Set to false')
+                const dailyTaskObj = {
+                    ...dailyTaskData,
+                    'isPending': false
+                }
+                currentCompanyData.dailyTaskData[dailyTaskIndex] = dailyTaskObj;
+                // console.log(currentCompanyData.dailyTaskData[dailyTaskIndex])
+            } else {
+                // console.log('dailyTaskDataAllStat is Set to true')
+                const dailyTaskObj = {
+                    ...dailyTaskData,
+                    'isPending': true
+                }
+                currentCompanyData.dailyTaskData[dailyTaskIndex] = dailyTaskObj;
+            }
+            // console.log('Current Daily Task Index ', dailyTaskIndex, ' & Data : ', dailyTaskData);
             storeDataToAsync(state.companyArr);
         }
     },

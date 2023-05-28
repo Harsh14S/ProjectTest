@@ -1,5 +1,5 @@
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -15,6 +15,8 @@ import { CustomStackNavigatorHeader } from './CustomStackNavigatorHeader';
 import { CommonStyles } from '../common/Styles';
 import CompanyDataScreen from '../components/CompanyDataScreen';
 import AllCompanyData from '../components/AllCompanyData';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 const Tab = createBottomTabNavigator();
 const Drawer = createDrawerNavigator();
@@ -25,7 +27,6 @@ const currentTime = dateObj.getTime();
 const currentDate = dateObj.getDate() + '/' + (dateObj.getMonth() + 1) + '/' + dateObj.getFullYear();
 
 export const StackNavigator = () => {
-
   return (
     <Stack.Navigator
       // initialRouteName=''
@@ -57,7 +58,7 @@ export const DrawerNavigator = ({ navigation, route }) => {
   // console.log('DrawerNavigator Routes: ', route);
   return (
     <Drawer.Navigator
-      // defaultStatus='open'
+      // defaultStatus='closed'
       drawerContent={(props) => <CustomDrawerContent {...props} />}
       screenOptions={{
         swipeEnabled: false,

@@ -1,16 +1,16 @@
 import { FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { CommonStyles, fontSizeChart } from '../common/Styles'
 import { COLORS } from '../common/Colors'
 import { IconLinks } from '../common/IconLinks'
 import { RFPercentage } from 'react-native-responsive-fontsize'
 import firestore, { firebase } from '@react-native-firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useIsFocused } from '@react-navigation/native'
+import { DrawerActions, useIsFocused } from '@react-navigation/native'
 import CustomerLoader from '../common/CommonComponents/CustomerLoader';
 import { useDrawerStatus } from '@react-navigation/drawer';
 import { useDispatch, useSelector } from 'react-redux'
-import { updatePendingStatus } from '../redux/reducers/Reducer'
+import { setCompanyDataFromAsync, updatePendingStatus } from '../redux/reducers/Reducer'
 
 const dateObj = new Date();
 const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thur', 'Fri', 'Sat'];
@@ -22,21 +22,34 @@ export default CompanyDataScreen = ({ route, navigation }) => {
   const isFocused = useIsFocused();
   const isDrawerStatus = useDrawerStatus();
   const [companyData, setcompanyData] = useState(null);
-  const [currentCompanyData, setCurrentCompanyData] = useState(null);
+  const [currentCompanyDataIndex, setCurrentCompanyDataIndex] = useState(null);
 
   const getCurrentCompany = async () => {
     try {
       await AsyncStorage.getItem('@currentCompany')
         .then(snap => {
-          // console.log("Company name: ", JSON.stringify(snap));
           const parseToObj = JSON.parse(snap);
-          // console.log('companyData: ', companyData)
+          const currentCompanyIndex = companyReducer.companyArr.findIndex(crr => crr.companyName === parseToObj.companyName);
+          setCurrentCompanyDataIndex(currentCompanyIndex)
           setcompanyData(parseToObj);
+          // console.log('Data: ', companyReducer.companyArr[currentCompanyIndex])
         })
     } catch (e) {
       console.log('Error: ', e)
     }
   }
+  const getAsyncStorageData = useCallback(async () => {
+    try {
+      await AsyncStorage.getItem('@allCompanyData').then(snap => {
+        const objData = JSON.parse(snap);
+        dispatch(setCompanyDataFromAsync(objData));
+        // console.log("companyReducer Data: ", companyReducer.companyArr.length)
+      })
+    } catch (e) {
+      // console.log('Error in getAsyncStorageData: ', e);
+      console.log('Add a company');
+    }
+  }, [])
 
   function updateTaskStatus(task, taskTit, dailyTaskTit, company) {
     const objData = {
@@ -47,13 +60,16 @@ export default CompanyDataScreen = ({ route, navigation }) => {
     }
     dispatch(updatePendingStatus(objData))
   }
-  // useEffect(() => {
-  //   // console.log('updateTaskStatus is awokened')
-  //   getCurrentCompany();
-  // }, [updateTaskStatus])
   useEffect(() => {
+    getAsyncStorageData();
+  }, [])
+
+  useEffect(() => {
+    console.log('Running')
     getCurrentCompany();
-  }, [isDrawerStatus === 'closed' && isFocused])
+    console.log('ABCD: ', companyReducer.companyArr[currentCompanyDataIndex]?.dailyTaskData)
+  }, [isDrawerStatus === 'closed' || isFocused])
+  // }, [getAsyncStorageData])
 
   return companyData ?
     <View style={[styles.container, CommonStyles.screenPadding]}>
@@ -72,7 +88,8 @@ export default CompanyDataScreen = ({ route, navigation }) => {
         showsVerticalScrollIndicator={false}
         // style={{ backgroundColor: COLORS.blue }}
         // data={companyReducer?.companyArr[1]?.dailyTaskData}
-        data={companyData.dailyTaskData}
+        // data={companyData.dailyTaskData}
+        data={companyReducer.companyArr[currentCompanyDataIndex]?.dailyTaskData}
         renderItem={({ item, index }) => {
           // console.log("item:--- ", item);
           return (

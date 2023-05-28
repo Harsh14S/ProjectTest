@@ -71,8 +71,8 @@ const CustomDrawerContent = ({ navigation }) => {
 
   useEffect(() => {
     // getCompany();
-    navigation.openDrawer()
-    getAsyncStorageData();
+    navigation.openDrawer();
+    // getAsyncStorageData();
   }, [])
 
   return (

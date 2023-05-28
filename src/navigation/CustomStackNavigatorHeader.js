@@ -4,11 +4,12 @@ import { COLORS } from '../common/Colors'
 import { RFPercentage } from 'react-native-responsive-fontsize'
 import { CommonStyles, fontSizeChart } from '../common/Styles'
 import { IconLinks } from '../common/IconLinks'
+import { StackActions } from '@react-navigation/native'
 
 export const CustomStackNavigatorHeader = ({ title, leftButton, rightButton, navigation }) => {
     return (
         <View style={[CommonStyles.headerStyle, styles.container]}>
-            <TouchableOpacity style={styles.backBtnContainer} onPress={() => { navigation.goBack() }}>
+            <TouchableOpacity style={styles.backBtnContainer} onPress={() => { navigation.dispatch(StackActions.replace('home')) }}>
                 <Image style={styles.backBtnIcon} source={IconLinks.leftAngle} />
                 <Text style={styles.backBtnTxt}>Back</Text>
             </TouchableOpacity>
