@@ -81,7 +81,7 @@ export default DashboardPendingScreen = ({ route, navigation }) => {
       // console.log(companyData)
       initialComopanyData();
     }
-  }, [companyData !== null])
+  }, [companyData])
 
   // useEffect(() => {
   //   console.log('Running')

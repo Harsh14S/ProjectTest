@@ -157,7 +157,7 @@ export default AddNoteScreen = ({ navigation }) => {
       </View>
       <TouchableOpacity
         disabled={checkOnlyBlankSpaces(titleValue) || taskArr.length === 0 ? true : false}
-        style={styles.saveBtn}
+        style={[styles.saveBtn, { backgroundColor: checkOnlyBlankSpaces(titleValue) || taskArr.length === 0 ? COLORS.blueInactive : COLORS.blue }]}
         onPress={() => {
           sendDataToRedux(titleValue, taskArr);
           // console.log(typeof(localDate))

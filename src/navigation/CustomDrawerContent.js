@@ -1,4 +1,4 @@
-import { FlatList, Image, Platform, StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import { Alert, FlatList, Image, Modal, Platform, StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { COLORS } from '../common/Colors'
 import { IconLinks } from '../common/IconLinks'
@@ -9,7 +9,7 @@ import CustomerLoader from '../common/CommonComponents/CustomerLoader';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useDrawerStatus } from '@react-navigation/drawer';
 import { useSelector, useDispatch } from 'react-redux';
-import { createNewCompany, setCompanyDataFromAsync } from '../redux/reducers/Reducer'
+import { createNewCompany, deleteCompany, setCompanyDataFromAsync } from '../redux/reducers/Reducer'
 // import { createNewCompany, initialData } from '../redux/reducers/Reducer.js'
 
 
@@ -116,16 +116,27 @@ const CustomDrawerContent = ({ navigation }) => {
             <FlatList
               data={companyReducer.companyArr}
               renderItem={({ item, index }) => {
+                // console.log(item)
                 return (
                   <View>
                     <TouchableOpacity style={styles.companyBtn} onPress={() => {
                       // console.log("CompanyName: ", item);
                       // setCurrentScreen(item.companyName)
                       setCurrentScreen(item)
-                    }}>
+                    }}
+                      onLongPress={() => {
+                        Alert.alert('Delete?', 'Are you sure you want to delete?', [
+                          { text: 'Cancel' },
+                          {
+                            text: 'Ok', onPress: () => dispatch(deleteCompany(item.companyName))
+                          }
+                        ])
+
+                      }}
+                    >
                       <Text style={styles.companyBtnText}>{item.companyName}</Text>
                       {
-                        index === 4 ?
+                        !item.isPending ?
                           <Image source={IconLinks.tickMark} style={styles.greenTickMark} /> : null
                       }
                     </TouchableOpacity>
@@ -149,6 +160,11 @@ const CustomDrawerContent = ({ navigation }) => {
           }}>
             <Text style={styles.allCompanyDataText}>All Company Data</Text>
           </TouchableOpacity>
+          {/* <Modal visible={true} transparent={true} style={{ flex: 1 }}>
+            <View style={{ backgroundColor: COLORS.transparentBlack, flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+              <View style={{ backgroundColor: COLORS.white, width: '70%', height: '25%', borderRadius: RFPercentage(2.5) }}></View>
+            </View>
+          </Modal> */}
 
         </View>
       </View>

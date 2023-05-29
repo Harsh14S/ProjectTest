@@ -376,12 +376,18 @@ const userSlice = createSlice({
             })
             // console.log('finalData: ', JSON.stringify(finalData))
             state.allCompanyPendingArr = finalData;
+        },
+        deleteCompany: (state, action) => {
+            // console.log('Delete Company: ', action.payload);
+            const deletedArr = state.companyArr.filter(crr => crr.companyName !== action.payload);
+            console.log(deletedArr)
+            state.companyArr = deletedArr;
         }
     },
 })
 
 export const {
-    createNewCompany, setCompanyDataFromAsync, addDailyTask, updatePendingStatus, pendingCompanyData, currentCompanyData, allCompanyData, allCompanyPendingData
+    createNewCompany, setCompanyDataFromAsync, addDailyTask, updatePendingStatus, pendingCompanyData, currentCompanyData, allCompanyData, allCompanyPendingData, deleteCompany
 } = userSlice.actions
 export default userSlice.reducer
 
