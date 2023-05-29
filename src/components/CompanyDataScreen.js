@@ -1,6 +1,6 @@
 import { FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import React, { useCallback, useEffect, useState } from 'react'
-import { CommonStyles, fontSizeChart } from '../common/Styles'
+import { CommonStyles, fontFamilyName, fontSizeChart } from '../common/Styles'
 import { COLORS } from '../common/Colors'
 import { IconLinks } from '../common/IconLinks'
 import { RFPercentage } from 'react-native-responsive-fontsize'
@@ -10,7 +10,7 @@ import { DrawerActions, useIsFocused } from '@react-navigation/native'
 import CustomerLoader from '../common/CommonComponents/CustomerLoader';
 import { useDrawerStatus } from '@react-navigation/drawer';
 import { useDispatch, useSelector } from 'react-redux'
-import { setCompanyDataFromAsync, updatePendingStatus } from '../redux/reducers/Reducer'
+import { allCompanyData, currentCompanyData, pendingCompanyData, setCompanyDataFromAsync, updatePendingStatus } from '../redux/reducers/Reducer'
 
 const dateObj = new Date();
 const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thur', 'Fri', 'Sat'];
@@ -60,16 +60,33 @@ export default CompanyDataScreen = ({ route, navigation }) => {
     }
     dispatch(updatePendingStatus(objData))
   }
+  function initialComopanyData() {
+    const objData = {
+      'companyName': companyData.companyName,
+    }
+    dispatch(currentCompanyData(objData))
+    dispatch(pendingCompanyData(objData));
+  }
+
   useEffect(() => {
-    getAsyncStorageData();
+    getAsyncStorageData().then(() => {
+      getCurrentCompany();
+    }).then(() => {
+      // dispatch(allCompanyData())
+    })
   }, [])
 
   useEffect(() => {
-    console.log('Running')
+    // console.log('Running')
     getCurrentCompany();
-    console.log('ABCD: ', companyReducer.companyArr[currentCompanyDataIndex]?.dailyTaskData)
-  }, [isDrawerStatus === 'closed' || isFocused])
+  }, [isDrawerStatus === 'closed'])
   // }, [getAsyncStorageData])
+  useEffect(() => {
+    if (companyData !== null) {
+      // console.log(companyData)
+      initialComopanyData();
+    }
+  }, [companyData !== null])
 
   return companyData ?
     <View style={[styles.container, CommonStyles.screenPadding]}>
@@ -111,7 +128,7 @@ export default CompanyDataScreen = ({ route, navigation }) => {
                       <View style={styles.verticalLightLine} />
                       <View style={{ marginLeft: RFPercentage(2.6), marginBottom: RFPercentage(1.5) }}>
                         <View>
-                          <Text style={{ fontSize: fontSizeChart._12px, color: COLORS.black, marginBottom: 7 }}>{note.taskTitleName}, <Text style={{ color: COLORS.grey }}>{new Date(note.createdOn).toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true })}</Text></Text>
+                          <Text style={{ fontSize: fontSizeChart._12px, color: COLORS.black, marginBottom: 7, fontFamily: 'Montserrat-Medium', }}>{note.taskTitleName}, <Text style={{ color: COLORS.grey }}>{new Date(note.createdOn).toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true })}</Text></Text>
                         </View>
                         <FlatList
                           scrollEnabled={false}
@@ -123,7 +140,8 @@ export default CompanyDataScreen = ({ route, navigation }) => {
                                 <TouchableOpacity
                                   style={styles.radioBTNContainer}
                                   onPress={() => {
-                                    updateTaskStatus(task.taskName, note.taskTitleName, item.dailyTaskName, companyData.companyName)
+                                    updateTaskStatus(task.taskName, note.taskTitleName, item.dailyTaskName, companyData.companyName);
+                                    dispatch(pendingCompanyData({ 'companyName': companyData.companyName, }))
                                   }}
                                 >
                                   <Image source={task.isPending ? IconLinks.radioButtonUnselected : IconLinks.radioButtonSelected} style={styles.radioBTNsmall} />
@@ -224,7 +242,8 @@ const styles = StyleSheet.create({
   },
   dateAndDayTxt: {
     fontSize: fontSizeChart._14px,
-    color: COLORS.grey
+    color: COLORS.grey,
+    fontFamily: 'Montserrat-Medium',
   },
   tasksSubContainer: {
     flexDirection: 'row',
@@ -232,6 +251,7 @@ const styles = StyleSheet.create({
   },
   taskNameTxt: {
     fontSize: fontSizeChart._12px,
-    color: COLORS.black
+    color: COLORS.black,
+    fontFamily: 'Montserrat-Medium',
   }
 })

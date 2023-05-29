@@ -1,5 +1,5 @@
-import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import React, { useEffect, useState } from 'react'
+import { Image, TouchableOpacity, View } from 'react-native'
+import React from 'react'
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -8,14 +8,13 @@ import AddNoteScreen from '../components/AddNoteScreen';
 import DashboardPendingScreen from '../components/DashboardPendingScreen';
 import { IconLinks } from '../common/IconLinks';
 import { RFPercentage } from "react-native-responsive-fontsize";
-import { COLORS } from '../common/Colors';
 import CustomDrawerContent from './CustomDrawerContent';
 import { getHeaderTitle } from '@react-navigation/elements';
 import { CustomStackNavigatorHeader } from './CustomStackNavigatorHeader';
 import { CommonStyles } from '../common/Styles';
 import CompanyDataScreen from '../components/CompanyDataScreen';
-import AllCompanyData from '../components/AllCompanyData';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import AllCompanyDataScreen from '../components/AllCompanyDataScreen';
+import AllCompanyDataPendingScreen from '../components/AllCompanyDataPendingScreen';
 
 
 const Tab = createBottomTabNavigator();
@@ -49,7 +48,7 @@ export const StackNavigator = () => {
             );
           },
         }} />
-      <Stack.Screen name="AllCompanyData" component={AllCompanyData} />
+      {/* <Stack.Screen name="AllCompanyData" component={AllCompanyData} /> */}
     </Stack.Navigator>
   )
 }
@@ -75,8 +74,8 @@ export const DrawerNavigator = ({ navigation, route }) => {
         }
       }}
     >
-      <Drawer.Screen name="AllDrawer" component={BottomTabNavigator} initialParams={{
-      }} />
+      <Drawer.Screen name="companyDrawer" component={BottomTabNavigator} initialParams={{}} />
+      <Drawer.Screen name="AllCompanyDrawer" component={AllCompanyBottomTabNavigator} initialParams={{}} />
     </Drawer.Navigator>
   )
 }
@@ -89,11 +88,22 @@ export const BottomTabNavigator = ({ navigation, route }) => {
         headerShown: false,
       }}
       tabBar={props => <CustomTabBar {...props} />}>
-      <Tab.Screen name="CompanyDataScreen" component={CompanyDataScreen} options={{
-        title: 'All'
-      }} />
-      <Tab.Screen name="Pending" component={DashboardPendingScreen} />
+      <Tab.Screen name="CompanyDataScreen" component={CompanyDataScreen} options={{ title: 'All' }} />
+      <Tab.Screen name="CompanyPendingData" component={DashboardPendingScreen} options={{ title: 'Pending' }} />
       {/* <Tab.Screen name="addNote" component={StackNavigator} /> */}
+    </Tab.Navigator>
+  )
+}
+export const AllCompanyBottomTabNavigator = ({ navigation, route }) => {
+  // console.log('BottomTabNavigator Routes: ', route);
+  return (
+    <Tab.Navigator
+      screenOptions={{
+        headerShown: false,
+      }}
+      tabBar={props => <CustomTabBar {...props} />}>
+      <Tab.Screen name="AllCompanyData" component={AllCompanyDataScreen} options={{ title: 'All' }} />
+      <Tab.Screen name="AllCompanyPendingData" component={AllCompanyDataPendingScreen} options={{ title: 'Pending' }} />
     </Tab.Navigator>
   )
 }

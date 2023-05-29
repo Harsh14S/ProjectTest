@@ -144,7 +144,8 @@ const CustomDrawerContent = ({ navigation }) => {
           </TouchableOpacity>
           <TouchableOpacity style={styles.allCompanyDataBtn} onPress={() => {
             // dispatch(createNewCompany('Abcd'))
-            asynStorageClear();
+            // asynStorageClear();
+            navigation.navigate('AllCompanyDrawer')
           }}>
             <Text style={styles.allCompanyDataText}>All Company Data</Text>
           </TouchableOpacity>

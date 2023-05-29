@@ -32,5 +32,13 @@ export const fontSizeChart = {
   _16px: RFPercentage(1.9),
   _14px: RFPercentage(1.7),
   _12px: RFPercentage(1.5),
+  _10px: RFPercentage(1.3),
+}
+
+export const fontFamilyName = {
+  'montserratMedium': 'Montserrat-Medium',
+  'montserratSemiBold': 'Montserrat-SemiBold',
+  'montserratBold': 'Montserrat-Bold',
+  'montserratNormal': 'Montserrat-Medium',
 }
 

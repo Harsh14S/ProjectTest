@@ -12,7 +12,6 @@ import { IconLinks } from '../common/IconLinks';
 import { fontSizeChart } from '../common/Styles';
 
 export default CustomTabBar = ({ state, descriptors, navigation, route }) => {
-
   return (
     <View style={styles.container}>
       {state.routes.map((route, index) => {
